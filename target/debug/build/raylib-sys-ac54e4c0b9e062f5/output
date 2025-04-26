@@ -1,0 +1,95 @@
+cargo:rerun-if-changed=build.rs
+cargo:rerun-if-changed=./binding/binding.h
+CMAKE_TOOLCHAIN_FILE_x86_64-unknown-linux-gnu = None
+CMAKE_TOOLCHAIN_FILE_x86_64_unknown_linux_gnu = None
+HOST_CMAKE_TOOLCHAIN_FILE = None
+CMAKE_TOOLCHAIN_FILE = None
+CMAKE_GENERATOR_x86_64-unknown-linux-gnu = None
+CMAKE_GENERATOR_x86_64_unknown_linux_gnu = None
+HOST_CMAKE_GENERATOR = None
+CMAKE_GENERATOR = None
+CMAKE_PREFIX_PATH_x86_64-unknown-linux-gnu = None
+CMAKE_PREFIX_PATH_x86_64_unknown_linux_gnu = None
+HOST_CMAKE_PREFIX_PATH = None
+CMAKE_PREFIX_PATH = None
+CMAKE_x86_64-unknown-linux-gnu = None
+CMAKE_x86_64_unknown_linux_gnu = None
+HOST_CMAKE = None
+CMAKE = None
+running: cd "/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/build" && CMAKE_PREFIX_PATH="" LC_ALL="C" "cmake" "/home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/raylib-sys-5.5.1/./raylib" "-DCMAKE_BUILD_TYPE=Debug" "-DBUILD_EXAMPLES=OFF" "-DCMAKE_BUILD_TYPE=Debug" "-DSUPPORT_BUSY_WAIT_LOOP=OFF" "-DSUPPORT_FILEFORMAT_JPG=ON" "-DUSE_WAYLAND=OFF" "-DOPENGL_VERSION=OFF" "-DSUPPORT_SCREEN_CAPTURE=ON" "-DSUPPORT_GIF_RECORDING=ON" "-DPLATFORM=Desktop" "-DCMAKE_INSTALL_PREFIX=/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out" "-DCMAKE_C_FLAGS= -ffunction-sections -fdata-sections -fPIC -m64" "-DCMAKE_C_COMPILER=/usr/bin/cc" "-DCMAKE_CXX_FLAGS= -ffunction-sections -fdata-sections -fPIC -m64" "-DCMAKE_CXX_COMPILER=/usr/bin/c++" "-DCMAKE_ASM_FLAGS= -ffunction-sections -fdata-sections -fPIC -m64" "-DCMAKE_ASM_COMPILER=/usr/bin/cc"
+-- Testing if -Werror=pointer-arith can be used -- compiles
+-- Testing if -Werror=implicit-function-declaration can be used -- compiles
+-- Testing if -fno-strict-aliasing can be used -- compiles
+-- Using raylib's GLFW
+-- Including X11 support
+-- Audio Backend: miniaudio
+-- Building raylib static library
+-- Generated build type: Debug
+-- Compiling with the flags:
+--   PLATFORM=PLATFORM_DESKTOP
+--   GRAPHICS=GRAPHICS_API_OPENGL_33
+-- Configuring done (0.1s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/build
+running: cd "/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/build" && LC_ALL="C" MAKEFLAGS="-j --jobserver-fds=8,9 --jobserver-auth=8,9" "cmake" "--build" "/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/build" "--target" "install" "--config" "Debug"
+[ 74%] Built target glfw
+[100%] Built target raylib
+Install the project...
+-- Install configuration: "Debug"
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/libraylib.a
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/raylib.h
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/rlgl.h
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/raymath.h
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/pkgconfig/raylib.pc
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/cmake/raylib/raylib-config-version.cmake
+-- Up-to-date: /home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/cmake/raylib/raylib-config.cmake
+cargo:root=/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out
+cargo:rustc-link-search=native=/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib
+cargo:rustc-link-search=/usr/local/lib
+cargo:rustc-link-lib=X11
+cargo:rustc-link-lib=static=raylib
+OUT_DIR = Some(/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out)
+OPT_LEVEL = Some(0)
+TARGET = Some(x86_64-unknown-linux-gnu)
+HOST = Some(x86_64-unknown-linux-gnu)
+cargo:rerun-if-env-changed=CC_x86_64-unknown-linux-gnu
+CC_x86_64-unknown-linux-gnu = None
+cargo:rerun-if-env-changed=CC_x86_64_unknown_linux_gnu
+CC_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=HOST_CC
+HOST_CC = None
+cargo:rerun-if-env-changed=CC
+CC = None
+cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT
+RUSTC_WRAPPER = None
+cargo:rerun-if-env-changed=CRATE_CC_NO_DEFAULTS
+CRATE_CC_NO_DEFAULTS = None
+DEBUG = Some(true)
+CARGO_CFG_TARGET_FEATURE = Some(fxsr,sse,sse2)
+cargo:rerun-if-env-changed=CFLAGS
+CFLAGS = None
+cargo:rerun-if-env-changed=HOST_CFLAGS
+HOST_CFLAGS = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64_unknown_linux_gnu
+CFLAGS_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=CFLAGS_x86_64-unknown-linux-gnu
+CFLAGS_x86_64-unknown-linux-gnu = None
+CARGO_ENCODED_RUSTFLAGS = Some()
+cargo:rerun-if-env-changed=AR_x86_64-unknown-linux-gnu
+AR_x86_64-unknown-linux-gnu = None
+cargo:rerun-if-env-changed=AR_x86_64_unknown_linux_gnu
+AR_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=HOST_AR
+HOST_AR = None
+cargo:rerun-if-env-changed=AR
+AR = None
+cargo:rerun-if-env-changed=ARFLAGS
+ARFLAGS = None
+cargo:rerun-if-env-changed=HOST_ARFLAGS
+HOST_ARFLAGS = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64_unknown_linux_gnu
+ARFLAGS_x86_64_unknown_linux_gnu = None
+cargo:rerun-if-env-changed=ARFLAGS_x86_64-unknown-linux-gnu
+ARFLAGS_x86_64-unknown-linux-gnu = None
+cargo:rustc-link-lib=static=rgui
+cargo:rustc-link-search=native=/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out
