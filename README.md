@@ -10,8 +10,10 @@ Every presentation starts by providing config information
 ```
 [config]
 resolution = [1920, 1080]
+background = #000000
 max_fps = 60
 fallback_font = "Sans"
+font_color = #ffffff
 ```
 
 ### Slide
