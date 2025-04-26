@@ -1,0 +1,14 @@
+/home/bk/Desktop/my_projects/present/target/debug/deps/libclang_sys-491b9c506a965fcd.rmeta: /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/macros.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/common.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/dynamic.rs
+
+/home/bk/Desktop/my_projects/present/target/debug/deps/libclang_sys-491b9c506a965fcd.rlib: /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/macros.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/common.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/dynamic.rs
+
+/home/bk/Desktop/my_projects/present/target/debug/deps/clang_sys-491b9c506a965fcd.d: /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/macros.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/common.rs /home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/dynamic.rs
+
+/home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs:
+/home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs:
+/home/bk/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs:
+/home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/macros.rs:
+/home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/common.rs:
+/home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out/dynamic.rs:
+
+# env-dep:OUT_DIR=/home/bk/Desktop/my_projects/present/target/debug/build/clang-sys-6a00d64717e6a45b/out

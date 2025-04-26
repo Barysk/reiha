@@ -1,0 +1,11 @@
+[package]
+name = "present"
+version = "0.1.0"
+authors = ["bk <boris.komarov@proton.me>"]
+edition = "2024"
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+raylib = "5.5.1"
