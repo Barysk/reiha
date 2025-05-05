@@ -1,67 +1,51 @@
-# Present (working name)
+# Reiha レイハ
+
+### Describtion
 
 A tool for making presentations using simple text file as an input, and a slide view as an output
 
-future syntax example (! not even alpha):
+it uses takahashi method.
+https://presentationzen.blogs.com/presentationzen/2005/09/living_large_ta.html
 
-### Config
-
-Every presentation starts by providing config information
-```
-[config]
-resolution = [1920, 1080]
-background = #000000
-max_fps = 60
-fallback_font = "Sans"
-font_color = #ffffff
-```
-
-### Slide
-
-to create a slide write
+### syntax example:
 
 ```
-[slide]
+
+| This is an example syntax
+|   - every line that starts with | is considered a comment
+|     and only being seen in terminal during presentation
+|   - there can be your notes
+|   - the first comment block is omitted
+
+Reiha
+
+| The name of the tool
+| inspired by sent, wend and takahashi method
+
+@path/to/image.png
+
+| To make image slide, start the line with @
+
+depends on
+- Raylib
+
+| Raylib is a powerful gamedevelopment library that is flexible enough
+
+present FILENAME
+one slide per paragraph
+
+questions?
 ```
 
-### Text
-
-after this you would probably want to add some text
+### output to console example
 
 ```
-[text]
-position = [12, 12]
-font = "Serif"
-size = 32
-And write there some text as you like. Use \n to new line
-```
+========
+Present
 
-Want to place only text on slide? Use auto_text
-
-```
-[text_slide]
-font = "Monospace"
-Write some text here, it will be scaled to match the slide.
-```
-
-### Image
-
-Image? Use this
-
-```
-[image]
-position = [12, 32]
-scale = 1.5
-path/to/image
-```
-
-Want to have only image on slide? Here it goes
-
-```
-[image_slide]
-path/to/image
-```
-
-### Comments
-
-Comment? Use this ```//``` at the **start of the line!**
+| The name of the tool
+| inspired by sent, wend and takahashi method
+========
+[1/5]
+3:12
+``` 
