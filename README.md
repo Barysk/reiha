@@ -31,6 +31,10 @@ depends on
 
 | Raylib is a powerful gamedevelopment library that is flexible enough
 
+\
+
+| Use \ to create an empty slide
+
 present FILENAME
 one slide per paragraph
 

@@ -1,7 +1,0 @@
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/libraylib.a
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/raylib.h
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/rlgl.h
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/include/raymath.h
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/pkgconfig/raylib.pc
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/cmake/raylib/raylib-config-version.cmake
-/home/bk/Desktop/my_projects/present/target/debug/build/raylib-sys-ac54e4c0b9e062f5/out/lib/cmake/raylib/raylib-config.cmake
