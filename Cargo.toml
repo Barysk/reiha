@@ -8,4 +8,4 @@ edition = "2024"
 opt-level = 3
 
 [dependencies]
-raylib = "5.5.1"
+macroquad = "0.4.14"

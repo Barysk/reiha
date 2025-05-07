@@ -1,39 +1,37 @@
-use raylib::prelude::*;
+use macroquad::prelude::*;
 
-const DEFAULT_FONT: &[u8; 712444] = include_bytes!("../fonts/NotoSerif-Regular.ttf");
+const DEFAULT_FONT: &[u8; 2697456] = include_bytes!("../fonts/monapo.ttf");
+const APPLICATION_NAME: &str = "blah бла レイハ";
 
-fn main() {
+#[macroquad::main("BasicShapes")]
+async fn main() {
     
-    const APPLICATION_NAME: &str = "レイハ";
-    const MAX_FPS: u32 = 16u32;
-
-    let (mut rl, thread) = raylib::init()
-        .size(640, 480)
-        .resizable()
-        .title(APPLICATION_NAME)
-        .build();
+    let fnt: Font = load_ttf_font_from_bytes(DEFAULT_FONT).unwrap();
     
-    rl.set_target_fps(MAX_FPS);
-    
-    let fnt = rl.load_font_from_memory(&thread, ".ttf", DEFAULT_FONT, 64i32, None).unwrap();
+    print!("{}",screen_width());
+    print!("{}",screen_height());
 
-    while !rl.window_should_close() {
-        let mut d = rl.begin_drawing(&thread);
-        
-        d.clear_background(Color::WHITE);
-        //d.draw_text(format!("Behld... \n\n\nthe {}", APPLICATION_NAME).as_str(), 12, 12, 20, Color::BLACK);
-        d.draw_text_ex(
-            &fnt,
-            format!("Behld... \n\n\nthe {}", APPLICATION_NAME).as_str(),
-            Vector2::new(12f32, 12f32),
-            20f32,
-            0f32,
-            Color::BLACK
+    loop {
+        clear_background(WHITE);
+
+        draw_line(40.0, 40.0, 100.0, 200.0, 15.0, BLUE);
+        draw_rectangle(screen_width() / 2.0 - 60.0, 100.0, 120.0, 60.0, GREEN);
+        draw_circle(screen_width() - 30.0, screen_height() - 30.0, 15.0, YELLOW);
+        draw_text("HELLO", 20.0, 20.0, 20.0, DARKGRAY);
+        draw_text_ex(
+            APPLICATION_NAME,
+            40.0,
+            40.0,
+            TextParams {
+                font: Some(&fnt),
+                font_size: 40u16,
+                font_scale: 1f32,
+                font_scale_aspect: 1f32,
+                rotation: 0f32,
+                color: BLACK,
+            },
         );
-    }
-    
-    // fn load_font_from_system() -> Font {
-        
-    // }
-}
 
+        next_frame().await
+    }
+}
