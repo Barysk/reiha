@@ -27,9 +27,9 @@ Reiha
 | To make image slide, start the line with @
 
 depends on
-- Raylib
+- macroquad
 
-| Raylib is a powerful gamedevelopment library that is flexible enough
+| macroquad-canvas
 
 \
 
