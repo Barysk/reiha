@@ -74,7 +74,7 @@ impl Slide {
                 draw_text_center(&self.text.clone().unwrap(), self.font.as_ref());
             }
             SlideType::Image => {
-                draw_texture(&self.img.clone().unwrap(), 0f32, 0f32, WHITE);
+                draw_img_scaled_and_centered(&self.img.clone().unwrap());
             }
         }
     }
@@ -91,7 +91,7 @@ async fn main() {
     let virtual_screen = Canvas2D::new(VIRTUAL_SCREEN.x, VIRTUAL_SCREEN.y);
 
     // Parse document
-    let img_path: &str = "test/th.png";
+    let img_path: &str = "../test/img.png";
 
     // Load all nessessary stuff here, becouse async is needed
     let img = load_texture(img_path).await.unwrap();
@@ -124,6 +124,42 @@ async fn main() {
 
         next_frame().await
     }
+}
+
+/// draws an image using draw_texture_ex
+fn draw_img_scaled_and_centered(texture: &Texture2D) {
+    let position: Vec2 = vec2(0f32, 0f32);
+
+    const SCREEN_CENTER: Vec2 = vec2(VIRTUAL_SCREEN.x / 2f32, VIRTUAL_SCREEN.y / 2f32);
+    const SCREEN_HEIGHT: f32 = VIRTUAL_SCREEN.y;
+    const SCREEN_WIDTH: f32 = VIRTUAL_SCREEN.x;
+
+    let scale: f32;
+
+    // floor is used so scaling is perfect(dot to dot)
+    if texture.height() > texture.width() {
+        scale = (SCREEN_HEIGHT / texture.height()).floor();
+    } else {
+        scale = (SCREEN_WIDTH / texture.width()).floor();
+    }
+
+    let scaled_texture: Vec2 = vec2(texture.width() * scale, texture.height() * scale);
+    let image_center: Vec2 = scaled_texture / 2f32;
+
+    let corected_position: Vec2 = position + (SCREEN_CENTER - image_center);
+
+    let dest_size: Vec2 = scaled_texture;
+
+    draw_texture_ex(
+        &texture,
+        corected_position.x,
+        corected_position.y,
+        WHITE,
+        DrawTextureParams {
+            dest_size: Some(dest_size),
+            ..Default::default()
+        },
+    );
 }
 
 fn draw_text_center(text: &str, font: Option<&Font>) {
