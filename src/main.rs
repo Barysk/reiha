@@ -37,7 +37,7 @@ enum SlideType {
 }
 
 struct Slide {
-    // id: u32,
+    // id: u32, // TODO: it is for slide enumeration
     slide_type: SlideType,
     text: Option<String>,
     img: Option<Texture2D>,
@@ -82,9 +82,6 @@ impl Slide {
 
 #[macroquad::main("レイハ")]
 async fn main() {
-    //let font: Font = load_ttf_font_from_bytes(DEFAULT_FONT).unwrap();
-    // println!("{}x{}", screen_width(), screen_height());
-    // println!("{}", get_time());
     set_default_filter_mode(FilterMode::Nearest);
     println!("main loop started");
 
@@ -106,9 +103,6 @@ async fn main() {
         {
             set_camera(&virtual_screen.camera);
             clear_background(GRAY);
-
-            // draw_text_center("Multiline text?\nworks?\nworks!", Some(&font));
-            // draw_text_center("Based", Some(&font));
 
             slide_img.draw();
 
@@ -170,16 +164,10 @@ fn draw_text_center(text: &str, font: Option<&Font>) {
 
     let font_size = find_max_font_size(text, font, font_scale, Some(line_distance_factor));
 
-    // set position to center of the screen
     let screen_center = vec2(VIRTUAL_SCREEN.x / 2f32, VIRTUAL_SCREEN.y / 2f32);
     let mut position = screen_center;
 
-    // //DEBUG
-    // draw_circle(position.x, position.y, 9f32, RED);
-
-    // measure_multiline_text should be introduced
-    // Someone already did it, so I took it
-    // https://github.com/not-fl3/macroquad/pull/884/files
+    // NOTE: Macroquad crate modifyed using this commit: https://github.com/not-fl3/macroquad/pull/884/files
     let text_dimentions = measure_multiline_text(
         text,
         font,
@@ -188,10 +176,6 @@ fn draw_text_center(text: &str, font: Option<&Font>) {
         Some(line_distance_factor),
     );
 
-    // TODO:
-    // if textCenter != VScreen center
-    // adymi roznicu ad posiion
-
     let text_center = vec2(
         position.x + (text_dimentions.width / 2f32),
         position.y + (text_dimentions.height / 2f32) - font_size as f32,
@@ -199,19 +183,6 @@ fn draw_text_center(text: &str, font: Option<&Font>) {
 
     let difference = screen_center - text_center;
     position += difference;
-
-    // if text_center != screen_center {
-    //     let difference = text_center - screen_center;
-    //     position += difference;
-    // }
-    // position.x -= text_dimentions.width / 2f32;
-    // position.y -= text_dimentions.height / 2f32;
-
-    //position.x -= text_dimentions.width / 2f32;
-    //position.y += text_dimentions.height / 2f32;
-
-    //DEBUG
-    draw_circle(position.x, position.y, 6f32, BLUE);
 
     draw_multiline_text_ex(
         text,
