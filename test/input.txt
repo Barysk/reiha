@@ -5,21 +5,17 @@
 |   - the first comment block is omitted
 
 Reiha
-
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@path/to/image.png
-
+@../test/th.png
 | To make image slide, start the line with @
 
 depends on
-- Raylib
-
-| Raylib is a powerful gamedevelopment library that is flexible enough
+- Macroquad
+| Macroquad is a powerful gamedevelopment library that is flexible enough
 
 \
-
 | Use \ to create an empty slide
 
 present FILENAME

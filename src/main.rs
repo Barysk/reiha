@@ -28,6 +28,9 @@ async fn main() {
   }
 } */
 
+//tmp
+//const TEST_FILE_PATH: &str = "../test/input.txt";
+
 const VIRTUAL_SCREEN: Vec2 = vec2(1600f32, 1200f32);
 
 enum SlideType {
@@ -37,20 +40,29 @@ enum SlideType {
 }
 
 struct Slide {
-    // id: u32, // TODO: it is for slide enumeration
+    num: u32,
     slide_type: SlideType,
     text: Option<String>,
     img: Option<Texture2D>,
     font: Option<Font>,
+    comments: Option<String>,
 }
 
 impl Slide {
-    fn new(slide_type: SlideType, text: Option<String>, img: Option<Texture2D>) -> Self {
+    fn new(
+        num: u32,
+        slide_type: SlideType,
+        text: Option<String>,
+        img: Option<Texture2D>,
+        comments: Option<String>,
+    ) -> Self {
         let mut self_values = Self {
+            num,
             slide_type,
             text: None,
             img: None,
             font: None,
+            comments,
         };
 
         match self_values.slide_type {
@@ -78,46 +90,222 @@ impl Slide {
             }
         }
     }
+
+    fn print(&self, total: usize) {
+        println!("========");
+
+        match self.slide_type {
+            SlideType::Empty => {
+                println!("(empty slide)");
+            }
+            SlideType::Text => {
+                if let Some(ref text) = self.text {
+                    for line in text.lines() {
+                        println!("{}", line);
+                    }
+                }
+            }
+            SlideType::Image => {
+                println!("(image)");
+            }
+        }
+
+        if let Some(ref comments) = self.comments {
+            println!("--------");
+            for line in comments.lines() {
+                println!("| {}", line);
+            }
+        }
+
+        println!("========");
+        println!("[slide {}/{}]", self.num, total);
+    }
+}
+
+fn print_time(elapsed_secs: Option<u64>) {
+    if let Some(secs) = elapsed_secs {
+        let minutes = secs / 60;
+        let seconds = secs % 60;
+
+        println!("[time {:01}:{:02}]", minutes, seconds);
+    }
 }
 
 #[macroquad::main("レイハ")]
 async fn main() {
+    // args
+    let args: Vec<String> = std::env::args().collect();
+    let input_path = args.get(1).expect("Usage: reiha <input-file>");
+
     set_default_filter_mode(FilterMode::Nearest);
-    println!("main loop started");
+    println!("Filter set");
 
     let virtual_screen = Canvas2D::new(VIRTUAL_SCREEN.x, VIRTUAL_SCREEN.y);
+    println!("Virtual Screen created");
 
-    // Parse document
-    let img_path: &str = "../test/img.png";
+    // tmp
+    //let slides: Vec<Slide> = parse(TEST_FILE_PATH).await;
+    let slides: Vec<Slide> = parse(input_path).await;
+    println!("Data parsed");
 
-    // Load all nessessary stuff here, becouse async is needed
-    let img = load_texture(img_path).await.unwrap();
-    let txt = "Based\nMultiline\nText".to_string();
+    let mut current_slide = 0;
+    let mut sec_timer: f32 = 0f32;
+    println!("Control vars created");
 
-    // create stuff from nessessary stuff
-    let slide_img = Slide::new(SlideType::Image, None, Some(img));
-    let slide_txt = Slide::new(SlideType::Text, Some(txt), None);
+    let start_time = std::time::Instant::now();
+    println!("Timestamp placed");
 
+    println!("Main loop start");
     loop {
+        sec_timer -= get_frame_time();
         clear_background(BLACK);
         {
             set_camera(&virtual_screen.camera);
             clear_background(GRAY);
 
-            slide_img.draw();
+            if let Some(slide) = slides.get(current_slide) {
+                slide.draw();
+                let elapsed = start_time.elapsed().as_secs();
+                if sec_timer <= 0f32 {
+                    clearscreen::clear().expect("failed to clear screen");
+                    slide.print(slides.len());
+                    print_time(Some(elapsed));
+                    sec_timer = 1f32;
+                }
+            }
 
             set_default_camera();
         }
         virtual_screen.draw();
 
-        draw_fps();
+        // Inputs
+        if is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::PageDown) {
+            if current_slide < slides.len() - 1 {
+                current_slide += 1;
+                sec_timer = 0f32;
+            }
+        }
 
-        if is_key_pressed(KeyCode::Q) {
+        if is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::PageUp) {
+            if current_slide > 0 {
+                current_slide -= 1;
+                sec_timer = 0f32;
+            }
+        }
+
+        if is_key_pressed(KeyCode::Q) || is_key_pressed(KeyCode::Escape) {
             break;
         }
 
+        draw_fps();
         next_frame().await
     }
+}
+
+// FIXME: Rveiew after getting soem sleep
+async fn parse(path: &str) -> Vec<Slide> {
+    let content = std::fs::read_to_string(path).expect("Failed to read file");
+
+    let mut slides = Vec::new();
+    let mut paragraphs = content.split("\n\n");
+
+    let mut slide_num = 1;
+    let mut skip_first_comment_block = true;
+
+    while let Some(paragraph) = paragraphs.next() {
+        let lines: Vec<&str> = paragraph.lines().collect();
+
+        if lines.iter().all(|line| line.trim().is_empty()) {
+            continue;
+        }
+
+        // Empty
+        if lines[0].starts_with('\\') {
+            let comments = lines
+                .iter()
+                .skip(1)
+                .filter(|l| l.trim_start().starts_with('|'))
+                .map(|l| l.trim_start_matches('|').trim())
+                .collect::<Vec<&str>>()
+                .join("\n");
+            slides.push(Slide::new(
+                slide_num,
+                SlideType::Empty,
+                None,
+                None,
+                Some(comments),
+            ));
+            slide_num += 1;
+            continue;
+        }
+
+        // Image
+        if lines[0].starts_with('@') {
+            let img_path = lines[0][1..].trim();
+            let texture = load_texture(img_path).await.expect("Failed to load image");
+            texture.set_filter(FilterMode::Nearest);
+
+            let comments = lines
+                .iter()
+                .skip(1)
+                .filter(|l| l.trim_start().starts_with('|'))
+                .map(|l| l.trim_start_matches('|').trim())
+                .collect::<Vec<&str>>()
+                .join("\n");
+
+            slides.push(Slide::new(
+                slide_num,
+                SlideType::Image,
+                None,
+                Some(texture),
+                if comments.is_empty() {
+                    None
+                } else {
+                    Some(comments)
+                },
+            ));
+            slide_num += 1;
+            continue;
+        }
+
+        // Text
+        let mut text_lines = Vec::new();
+        let mut comment_lines = Vec::new();
+
+        for line in lines {
+            if line.trim_start().starts_with('|') {
+                comment_lines.push(line.trim_start_matches('|').trim());
+            } else {
+                text_lines.push(line.trim());
+            }
+        }
+
+        // If it's only a comment block, check if we should skip it
+        if text_lines.is_empty() && !comment_lines.is_empty() {
+            if skip_first_comment_block {
+                skip_first_comment_block = false;
+                continue;
+            }
+            continue;
+        }
+
+        // Text slide with optional comments
+        slides.push(Slide::new(
+            slide_num,
+            SlideType::Text,
+            Some(text_lines.join("\n")),
+            None,
+            if comment_lines.is_empty() {
+                None
+            } else {
+                Some(comment_lines.join("\n"))
+            },
+        ));
+
+        slide_num += 1;
+    }
+
+    slides
 }
 
 /// draws an image using draw_texture_ex

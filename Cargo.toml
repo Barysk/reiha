@@ -8,5 +8,6 @@ edition = "2024"
 opt-level = 3
 
 [dependencies]
+clearscreen = "4.0.1"
 macroquad = "0.4.14"
 macroquad-canvas = "0.4.1"
