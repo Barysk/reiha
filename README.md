@@ -9,6 +9,7 @@ It utilises the takahashi method:
 https://presentationzen.blogs.com/presentationzen/2005/09/living_large_ta.html
 
 Inspired by ```sent```
+
 Some features borrowed from ```wend```
 
 ### usage
@@ -48,6 +49,9 @@ Its location can be ```/home/user/.config/reiha/config```
 --linear
 --font /home/user/.fonts/Catholicon.otf
 ```
+### how it looks (presentation: left side, terminal output: right side)
+
+![An image of how it looks](example.png)
 
 ### syntax:
 
