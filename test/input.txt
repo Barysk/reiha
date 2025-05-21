@@ -8,12 +8,17 @@
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@test/th.png
+@test/screen.png
 | To make image slide, start the line with @
+|   Blah
 
-depends on
-- Macroquad
-| Macroquad is a powerful gamedevelopment library that is flexible enough
+It scales
+  text that you
+    write to fit the
+  slide
+|
+| Automatically
+|  Of course
 
 \
 | Use \ to create an empty slide

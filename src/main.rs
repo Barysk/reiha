@@ -1,38 +1,91 @@
 use macroquad::prelude::*;
 use macroquad_canvas::Canvas2D;
+use std::path::PathBuf;
 
 macro_rules! debug_println {
     ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
 }
 
 const DEFAULT_FONT: &[u8; 7835672] = include_bytes!("../fonts/ipaexm.ttf");
-// TODO: Analyze later, introduce better font
-/* use macroquad::prelude::*;
-
-use macroquad_text::Fonts;
-
-const NOTO_SANS: &[u8] = include_bytes!("../assets/fonts/NotoSans-Regular.ttf");
-const NOTO_SANS_JP: &[u8] = include_bytes!("../assets/fonts/NotoSansJP-Regular.otf");
-
-fn window_conf() -> Conf { /* ommitted */ }
-
-#[macroquad::main(window_conf)]
-async fn main() {
-  let mut fonts = Fonts::default();
-
-  fonts.load_font_from_bytes("Noto Sans", NOTO_SANS).unwrap();
-  fonts.load_font_from_bytes("Noto Sans JP", NOTO_SANS_JP).unwrap();
-
-  loop {
-    fonts.draw_text("Nice", 20.0, 0.0, 69, Color::from([1.0; 4]));
-    fonts.draw_text("良い", 20.0, 89.0, 69, Color::from([1.0; 4]));
-    fonts.draw_text("Nice 良い", 20.0, 178.0, 69, Color::from([1.0; 4]));
-
-    next_frame().await;
-  }
-} */
 
 const VIRTUAL_SCREEN_SIZE: Vec2 = vec2(1600f32, 1200f32);
+
+struct Config {
+    theme: Option<Theme>,
+    filtering: Option<FilterMode>,
+    font_path: Option<String>,
+    virtual_resolution: Option<Vec2>,
+}
+
+impl Config {
+    fn from_file() -> Self {
+        let mut config = Config {
+            theme: None,
+            filtering: None,
+            font_path: None,
+            virtual_resolution: None,
+        };
+
+        let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        let config_path = home_dir.join(".config/reiha/config");
+
+        if let Ok(lines) = std::fs::read_to_string(config_path) {
+            let args = lines
+                .lines()
+                .flat_map(|line| line.split_whitespace())
+                .map(str::to_string)
+                .collect::<Vec<_>>();
+
+            for i in 0..args.len() {
+                match args[i].as_str() {
+                    "-t" | "--theme" => {
+                        if let Some(value) = args.get(i + 1) {
+                            if value == "dark" {
+                                config.theme = Some(DARK_THEME);
+                            } else if value == "light" {
+                                config.theme = Some(LIGHT_THEME);
+                            } else if value.contains('x') {
+                                let parts: Vec<&str> = value.split('x').collect();
+                                if parts.len() == 2 {
+                                    if let (Ok(bg), Ok(font)) =
+                                        (parse_hex_color(parts[0]), parse_hex_color(parts[1]))
+                                    {
+                                        config.theme = Some(Theme {
+                                            background_color: bg,
+                                            font_color: font,
+                                        });
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    "-l" | "--linear" => {
+                        config.filtering = Some(FilterMode::Linear);
+                    }
+                    "-f" | "--font" => {
+                        if let Some(path) = args.get(i + 1) {
+                            config.font_path = Some(path.clone());
+                        }
+                    }
+                    "-r" | "--resolution" => {
+                        if let Some(value) = args.get(i + 1) {
+                            if let Some((w, h)) = value.split_once('x') {
+                                if let (Ok(w), Ok(h)) = (w.parse::<f32>(), h.parse::<f32>()) {
+                                    if w <= 3840.0 && h <= 3840.0 {
+                                        config.virtual_resolution = Some(vec2(w, h));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
+        config
+    }
+}
 
 enum SlideType {
     Empty,
@@ -47,31 +100,31 @@ struct Theme {
 
 const DARK_THEME: Theme = Theme {
     background_color: Color {
-        r: 0f32,
-        g: 0f32,
-        b: 0f32,
-        a: 255f32,
+        r: 0.0627f32,
+        g: 0.0627f32,
+        b: 0.0627f32,
+        a: 1f32,
     },
     font_color: Color {
-        r: 255f32,
-        g: 255f32,
-        b: 255f32,
-        a: 255f32,
+        r: 1f32,
+        g: 1f32,
+        b: 0.902f32,
+        a: 1f32,
     },
 };
 
 const LIGHT_THEME: Theme = Theme {
     background_color: Color {
-        r: 255f32,
-        g: 255f32,
-        b: 255f32,
-        a: 255f32,
+        r: 1f32,
+        g: 1f32,
+        b: 0.902f32,
+        a: 1f32,
     },
     font_color: Color {
-        r: 0f32,
-        g: 0f32,
-        b: 0f32,
-        a: 255f32,
+        r: 0.0627f32,
+        g: 0.0627f32,
+        b: 0.0627f32,
+        a: 1f32,
     },
 };
 
@@ -179,7 +232,7 @@ impl Slide {
         if let Some(comments) = &self.comments {
             println!("--------");
             for line in comments.lines() {
-                println!("| {}", line);
+                println!("{}", line);
             }
         }
 
@@ -199,34 +252,38 @@ fn print_time(elapsed_secs: Option<u64>) {
 
 #[macroquad::main("レイハ")]
 async fn main() {
+    let config = Config::from_file();
+
+    let mut theme = config.theme.unwrap_or(DARK_THEME);
+    let mut filtering = config.filtering.unwrap_or(FilterMode::Nearest);
+    let mut font: Font = if let Some(path) = &config.font_path {
+        let data = std::fs::read(path).expect("Failed to read font file from config");
+        load_ttf_font_from_bytes(&data).expect("Failed to load font from config")
+    } else {
+        load_ttf_font_from_bytes(DEFAULT_FONT).unwrap()
+    };
+    let mut virtual_screen_size = config.virtual_resolution.unwrap_or(VIRTUAL_SCREEN_SIZE);
+
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 || args.contains(&"help".to_string()) {
         println!(
             "Usage: reiha <path>\n\
             Options:\n\
-            -t dark|light|<bg_hex>x<font_hex> - Set theme\n\
-            -l set texture filtering mode to linear, default is nearest\n\
-            -f <font_path> - Use a custom font\n\
-            -r <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
-            \n\
-            bk 2025"
+            -t, --theme dark|light|<bg_hex>x<font_hex> - Set theme\n\
+            -l, --linear - set texture filtering mode to linear, default is nearest\n\
+            -f, --font <font_path> - Use a custom font\n\
+            -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
+            ________________________________________________\n\
+            レイハ | bk | 和理守 | Wednesday 21 May, 2025 CE"
         );
         return;
     }
 
-    // TODO: introduce .config/reiha/config
-    // to set up defaults
-
     let input_path = &args[1];
-
-    let mut theme = DARK_THEME;
-    let mut filtering = FilterMode::Nearest;
-    let mut font: Font = load_ttf_font_from_bytes(DEFAULT_FONT).unwrap();
-    let mut virtual_screen_size = VIRTUAL_SCREEN_SIZE;
 
     for i in 2..args.len() {
         match args[i].as_str() {
-            "-t" => {
+            "-t" | "--theme" => {
                 if let Some(value) = args.get(i + 1) {
                     if value == "dark" {
                         theme = DARK_THEME;
@@ -253,16 +310,16 @@ async fn main() {
                     }
                 }
             }
-            "-l" => {
+            "-l" | "--linear" => {
                 filtering = FilterMode::Linear;
             }
-            "-f" => {
+            "-f" | "--font" => {
                 if let Some(path) = args.get(i + 1) {
                     let data = std::fs::read(path).expect("Failed to read font file");
                     font = load_ttf_font_from_bytes(&data).expect("Failed to load font");
                 }
             }
-            "-r" => {
+            "-r" | "--resolution" => {
                 if let Some(value) = args.get(i + 1) {
                     if let Some((w, h)) = value.split_once('x') {
                         if let (Ok(w), Ok(h)) = (w.parse::<f32>(), h.parse::<f32>()) {
@@ -336,14 +393,24 @@ async fn main() {
         virtual_screen.draw();
 
         // Inputs
-        if is_key_pressed(KeyCode::Right) || is_key_pressed(KeyCode::PageDown) {
+        if is_key_pressed(KeyCode::Right)
+            || is_key_pressed(KeyCode::Down)
+            || is_key_pressed(KeyCode::J)
+            || is_key_pressed(KeyCode::L)
+            || is_key_pressed(KeyCode::PageDown)
+        {
             if current_slide < slides.len() - 1 {
                 current_slide += 1;
                 sec_timer = 0f32;
             }
         }
 
-        if is_key_pressed(KeyCode::Left) || is_key_pressed(KeyCode::PageUp) {
+        if is_key_pressed(KeyCode::Left)
+            || is_key_pressed(KeyCode::Up)
+            || is_key_pressed(KeyCode::K)
+            || is_key_pressed(KeyCode::H)
+            || is_key_pressed(KeyCode::PageUp)
+        {
             if current_slide > 0 {
                 current_slide -= 1;
                 sec_timer = 0f32;
@@ -359,12 +426,12 @@ async fn main() {
             break;
         }
 
-        draw_fps();
+        //draw_fps();
         next_frame().await
     }
 }
 
-/// parses hex color to 255 format
+/// parses hex color to Color
 fn parse_hex_color(s: &str) -> Result<Color, ()> {
     let s = s.trim_start_matches('#');
     if s.len() != 6 {
@@ -395,15 +462,16 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
             continue;
         }
 
-        // Empty
+        // Empty slide
         if lines[0].starts_with('\\') {
             let comments = lines
                 .iter()
                 .skip(1)
                 .filter(|l| l.trim_start().starts_with('|'))
-                .map(|l| l.trim_start_matches('|').trim())
+                .map(|l| *l)
                 .collect::<Vec<&str>>()
                 .join("\n");
+
             slides.push(Slide::new(
                 slide_num,
                 SlideType::Empty,
@@ -417,7 +485,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
             continue;
         }
 
-        // Image
+        // Image slide
         if lines[0].starts_with('@') {
             let img_path = lines[0][1..].trim();
             let texture = load_texture(img_path).await.expect("Failed to load image");
@@ -426,7 +494,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
                 .iter()
                 .skip(1)
                 .filter(|l| l.trim_start().starts_with('|'))
-                .map(|l| l.trim_start_matches('|').trim())
+                .map(|l| *l)
                 .collect::<Vec<&str>>()
                 .join("\n");
 
@@ -447,13 +515,13 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
             continue;
         }
 
-        // Text
+        // Text slide
         let mut text_lines = Vec::new();
         let mut comment_lines = Vec::new();
 
         for line in lines {
             if line.trim_start().starts_with('|') {
-                comment_lines.push(line.trim_start_matches('|').trim());
+                comment_lines.push(line);
             } else {
                 text_lines.push(line);
             }
@@ -463,7 +531,6 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
             continue;
         }
 
-        // Text slide with optional comments
         slides.push(Slide::new(
             slide_num,
             SlideType::Text,
@@ -570,12 +637,14 @@ fn find_max_font_size(
 
     // Determine step size based on text length
     let text_len = text.chars().count();
-    let step: u16 = match text_len {
-        0..=3 => 72,
-        4..=7 => 64,
-        8..=15 => 16,
-        _ => 4,
+    let mut step: u16 = match text_len {
+        0..=3 => 256,
+        4..=7 => 128,
+        8..=15 => 64,
+        _ => 32,
     };
+
+    let mut depth = 4;
 
     let mut font_size: u16 = 4u16;
 
@@ -584,8 +653,12 @@ fn find_max_font_size(
 
         if dim.width > target_width || dim.height > target_height {
             font_size -= step;
+            step = step / 2;
+            depth -= 1;
             debug_println!("decreased to {}", font_size);
-            break;
+            if depth <= 0 {
+                break;
+            }
         }
 
         font_size += step;
