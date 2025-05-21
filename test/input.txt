@@ -4,11 +4,22 @@
 |   - there can be your notes
 |   - the first comment block is omitted
 
-Reiha
+A lot of
+V text
+A lot of
+V text
+A lot of
+V text
+A lot of
+V text
+A lot of
+V text
+A lot of
+V text
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@../test/th.png
+@test/img.png
 | To make image slide, start the line with @
 
 depends on

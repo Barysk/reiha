@@ -29,7 +29,7 @@ async fn main() {
 } */
 
 //tmp
-//const TEST_FILE_PATH: &str = "../test/input.txt";
+const TEST_FILE_PATH: &str = "test/input.txt";
 
 const VIRTUAL_SCREEN: Vec2 = vec2(1600f32, 1200f32);
 
@@ -69,7 +69,7 @@ impl Slide {
             SlideType::Empty => {}
             SlideType::Text => {
                 self_values.font = Some(load_ttf_font_from_bytes(DEFAULT_FONT).unwrap());
-                self_values.text = text;
+                self_values.text = text
             }
             SlideType::Image => {
                 self_values.img = img;
@@ -133,9 +133,18 @@ fn print_time(elapsed_secs: Option<u64>) {
 
 #[macroquad::main("レイハ")]
 async fn main() {
-    // args
-    let args: Vec<String> = std::env::args().collect();
-    let input_path = args.get(1).expect("Usage: reiha <input-file>");
+    // NOTE: args
+    // let args: Vec<String> = std::env::args().collect();
+    // let input_path = args.get(1).expect("Usage: reiha <input-file>");
+
+    // usage: reiha <path>
+    // reiha help - to show this page
+    //
+    // -t dark/light - to set premade dark or light theme
+    // -F nearest/linear - set filtering mode, default is ...
+    // -f fontname - use custom font
+    // -c #hex_background|#hex_font - set custom colors
+    // -r 1600x1200 - to set resolution, default is 1600x1200
 
     set_default_filter_mode(FilterMode::Nearest);
     println!("Filter set");
@@ -144,8 +153,8 @@ async fn main() {
     println!("Virtual Screen created");
 
     // tmp
-    //let slides: Vec<Slide> = parse(TEST_FILE_PATH).await;
-    let slides: Vec<Slide> = parse(input_path).await;
+    let slides: Vec<Slide> = parse(TEST_FILE_PATH).await;
+    // let slides: Vec<Slide> = parse(input_path).await;
     println!("Data parsed");
 
     let mut current_slide = 0;
@@ -210,7 +219,6 @@ async fn parse(path: &str) -> Vec<Slide> {
     let mut paragraphs = content.split("\n\n");
 
     let mut slide_num = 1;
-    let mut skip_first_comment_block = true;
 
     while let Some(paragraph) = paragraphs.next() {
         let lines: Vec<&str> = paragraph.lines().collect();
@@ -243,7 +251,6 @@ async fn parse(path: &str) -> Vec<Slide> {
         if lines[0].starts_with('@') {
             let img_path = lines[0][1..].trim();
             let texture = load_texture(img_path).await.expect("Failed to load image");
-            texture.set_filter(FilterMode::Nearest);
 
             let comments = lines
                 .iter()
@@ -280,12 +287,7 @@ async fn parse(path: &str) -> Vec<Slide> {
             }
         }
 
-        // If it's only a comment block, check if we should skip it
         if text_lines.is_empty() && !comment_lines.is_empty() {
-            if skip_first_comment_block {
-                skip_first_comment_block = false;
-                continue;
-            }
             continue;
         }
 
@@ -318,11 +320,10 @@ fn draw_img_scaled_and_centered(texture: &Texture2D) {
 
     let scale: f32;
 
-    // floor is used so scaling is perfect(dot to dot)
     if texture.height() > texture.width() {
-        scale = (SCREEN_HEIGHT / texture.height()).floor();
+        scale = SCREEN_HEIGHT / texture.height();
     } else {
-        scale = (SCREEN_WIDTH / texture.width()).floor();
+        scale = SCREEN_WIDTH / texture.width();
     }
 
     let scaled_texture: Vec2 = vec2(texture.width() * scale, texture.height() * scale);
@@ -388,6 +389,8 @@ fn draw_text_center(text: &str, font: Option<&Font>) {
     );
 }
 
+// FIXME: font rendering is not a fast process
+// take monospace glyph size for the probe
 fn find_max_font_size(
     text: &str,
     font: Option<&Font>,
@@ -399,8 +402,8 @@ fn find_max_font_size(
     let target_width = screen_w * 0.95;
     let target_height = screen_h * 0.95;
 
-    let mut font_size = 16u16;
-    let step = 16u16;
+    let mut font_size = 4u16;
+    let step = 4u16;
 
     loop {
         let dim = measure_multiline_text(text, font, font_size, font_scale, line_distance_factor);
