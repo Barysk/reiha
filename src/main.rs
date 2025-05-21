@@ -76,6 +76,7 @@ struct Slide {
     slide_type: SlideType,
     text: Option<String>,
     img: Option<Texture2D>,
+    img_scale: Option<f32>,
     font: Option<Font>,
     font_size: Option<u16>,
     comments: Option<String>,
@@ -95,6 +96,7 @@ impl Slide {
             slide_type,
             text: None,
             img: None,
+            img_scale: None,
             font: None,
             font_size: None,
             comments,
@@ -116,7 +118,17 @@ impl Slide {
                 self_values.text = text;
             }
             SlideType::Image => {
+                let screen_height: f32 = virtual_screen_size.y;
+                let screen_width: f32 = virtual_screen_size.x;
                 self_values.img = img;
+
+                let img: Texture2D = self_values.img.clone().unwrap();
+
+                if img.height() > img.width() {
+                    self_values.img_scale = Some(screen_height / img.height());
+                } else {
+                    self_values.img_scale = Some(screen_width / img.width());
+                }
             }
         }
 
@@ -136,7 +148,11 @@ impl Slide {
                 );
             }
             SlideType::Image => {
-                draw_img_scaled_and_centered(&self.img.clone().unwrap(), virtual_screen_size);
+                draw_img_scaled_and_centered(
+                    &self.img.clone().unwrap(),
+                    &self.img_scale.clone().unwrap(),
+                    virtual_screen_size,
+                );
             }
         }
     }
@@ -463,21 +479,11 @@ async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
 }
 
 /// draws an image using draw_texture_ex
-fn draw_img_scaled_and_centered(texture: &Texture2D, virtual_screen_size: &Vec2) {
+fn draw_img_scaled_and_centered(texture: &Texture2D, img_scale: &f32, virtual_screen_size: &Vec2) {
     let position: Vec2 = vec2(0f32, 0f32);
     let screen_center: Vec2 = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
-    let screen_height: f32 = virtual_screen_size.y;
-    let screen_width: f32 = virtual_screen_size.x;
 
-    let scale: f32;
-
-    if texture.height() > texture.width() {
-        scale = screen_height / texture.height();
-    } else {
-        scale = screen_width / texture.width();
-    }
-
-    let scaled_texture: Vec2 = vec2(texture.width() * scale, texture.height() * scale);
+    let scaled_texture: Vec2 = vec2(texture.width() * img_scale, texture.height() * img_scale);
     let image_center: Vec2 = scaled_texture / 2f32;
 
     let corected_position: Vec2 = position + (screen_center - image_center);
@@ -522,7 +528,7 @@ fn draw_text_center(
 
     let text_center = vec2(
         position.x + (text_dimentions.width / 2f32),
-        position.y + (text_dimentions.height / 2f32) - (font_size as f32 * 0.9f32),
+        position.y + (text_dimentions.height / 2f32) - (font_size as f32 * 0.85), // 0.85 is a picked value that seems to be working
     );
 
     let difference = screen_center - text_center;
