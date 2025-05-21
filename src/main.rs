@@ -522,7 +522,7 @@ fn draw_text_center(
 
     let text_center = vec2(
         position.x + (text_dimentions.width / 2f32),
-        position.y + (text_dimentions.height / 2f32) - font_size as f32,
+        position.y + (text_dimentions.height / 2f32) - (font_size as f32 * 0.9f32),
     );
 
     let difference = screen_center - text_center;
@@ -551,10 +551,10 @@ fn find_max_font_size(
     line_distance_factor: Option<f32>,
     virtual_screen_size: &Vec2,
 ) -> u16 {
-    let screen_w = virtual_screen_size.y;
-    let screen_h = virtual_screen_size.x;
-    let target_width = screen_w * 0.8;
-    let target_height = screen_h * 0.8;
+    let screen_w = virtual_screen_size.x;
+    let screen_h = virtual_screen_size.y;
+    let target_width = screen_w * 0.96;
+    let target_height = screen_h * 0.96;
 
     let mut font_size = 32u16;
     let step = 32u16;
