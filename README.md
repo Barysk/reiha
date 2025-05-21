@@ -12,17 +12,21 @@ Inspired by ```sent```
 
 Some features borrowed from ```wend```
 
-### usage
+### How it looks (presentation: left side, terminal output: right side)
+
+![An image of how it looks](example.png)
+
+### Usage
 
 ```reiha <path>```
 
-### options
+### Options
 ```-t, --theme dark|light|<bg_hex>x<font_hex>``` - Set theme
 ```-l, --linear``` - set texture filtering mode to linear, default is nearest
 ```-f, --font <font_path>``` - Use a custom font
 ```-r, --resolution <width>x<height>``` - Set virtual resolution (default 1600x1200) (max 3840x3840)
 
-### movement
+### Movement
 
 ```
 To close reiha you can use:
@@ -40,7 +44,7 @@ F11 || F
 *Letter case doesn't metter
 ```
 
-### config file
+### Config file
 Its location can be ```/home/user/.config/reiha/config```
 
 ```
@@ -49,11 +53,8 @@ Its location can be ```/home/user/.config/reiha/config```
 --linear
 --font /home/user/.fonts/Catholicon.otf
 ```
-### how it looks (presentation: left side, terminal output: right side)
 
-![An image of how it looks](example.png)
-
-### syntax:
+### Syntax:
 
 ```
 | This is an example syntax
@@ -87,7 +88,7 @@ one slide per paragraph
 questions?
 ```
 
-### output to console
+### Output to console
 
 ```
 ========
@@ -101,5 +102,5 @@ It scales
 |  Of course
 ========
 [slide 3/6]
-[time 1:02]
+[time 1:20]
 ``` 
