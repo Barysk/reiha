@@ -1,6 +1,10 @@
 use macroquad::prelude::*;
 use macroquad_canvas::Canvas2D;
 
+macro_rules! debug_println {
+    ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
+}
+
 const DEFAULT_FONT: &[u8; 7835672] = include_bytes!("../fonts/ipaexm.ttf");
 // TODO: Analyze later, introduce better font
 /* use macroquad::prelude::*;
@@ -77,7 +81,6 @@ struct Slide {
     text: Option<String>,
     img: Option<Texture2D>,
     img_scale: Option<f32>,
-    font: Option<Font>,
     font_size: Option<u16>,
     comments: Option<String>,
 }
@@ -90,6 +93,7 @@ impl Slide {
         img: Option<Texture2D>,
         comments: Option<String>,
         virtual_screen_size: &Vec2,
+        font: &Font,
     ) -> Self {
         let mut self_values = Self {
             num,
@@ -97,7 +101,6 @@ impl Slide {
             text: None,
             img: None,
             img_scale: None,
-            font: None,
             font_size: None,
             comments,
         };
@@ -105,16 +108,13 @@ impl Slide {
         match self_values.slide_type {
             SlideType::Empty => {}
             SlideType::Text => {
-                self_values.font = Some(load_ttf_font_from_bytes(DEFAULT_FONT).unwrap());
-                if let Some(ref text_val) = text {
-                    self_values.font_size = Some(find_max_font_size(
-                        text_val,
-                        self_values.font.as_ref(),
-                        1.0,
-                        Some(1.0),
-                        &virtual_screen_size,
-                    ));
-                }
+                self_values.font_size = Some(find_max_font_size(
+                    text.as_ref().unwrap(),
+                    Some(font),
+                    1.0,
+                    Some(1.0),
+                    virtual_screen_size,
+                ));
                 self_values.text = text;
             }
             SlideType::Image => {
@@ -135,13 +135,13 @@ impl Slide {
         self_values
     }
 
-    fn draw(&self, font_color: &Color, virtual_screen_size: &Vec2) {
+    fn draw(&self, font: &Font, font_color: &Color, virtual_screen_size: &Vec2) {
         match self.slide_type {
             SlideType::Empty => {}
             SlideType::Text => {
                 draw_text_center(
                     &self.text.clone().unwrap(),
-                    self.font.as_ref(),
+                    Some(font),
                     font_color,
                     virtual_screen_size,
                     self.font_size.unwrap_or(16u16),
@@ -165,7 +165,7 @@ impl Slide {
                 println!("(empty slide)");
             }
             SlideType::Text => {
-                if let Some(ref text) = self.text {
+                if let Some(text) = &self.text {
                     for line in text.lines() {
                         println!("{}", line);
                     }
@@ -176,7 +176,7 @@ impl Slide {
             }
         }
 
-        if let Some(ref comments) = self.comments {
+        if let Some(comments) = &self.comments {
             println!("--------");
             for line in comments.lines() {
                 println!("| {}", line);
@@ -213,6 +213,9 @@ async fn main() {
         );
         return;
     }
+
+    // TODO: introduce .config/reiha/config
+    // to set up defaults
 
     let input_path = &args[1];
 
@@ -295,7 +298,7 @@ async fn main() {
 
     let mut is_fullscreen = false;
 
-    let slides: Vec<Slide> = parse(input_path, &virtual_screen_size).await;
+    let slides: Vec<Slide> = parse(input_path, &virtual_screen_size, &font).await;
     println!("Data parsed");
 
     let mut current_slide = 0;
@@ -305,7 +308,7 @@ async fn main() {
     let start_time = std::time::Instant::now();
     println!("Timestamp placed");
 
-    let show_in_terminal = false;
+    let show_in_terminal = true;
 
     println!("Main loop start");
     loop {
@@ -316,7 +319,7 @@ async fn main() {
             clear_background(theme.background_color);
 
             if let Some(slide) = slides.get(current_slide) {
-                slide.draw(&theme.font_color, &virtual_screen_size);
+                slide.draw(&font, &theme.font_color, &virtual_screen_size);
                 let elapsed = start_time.elapsed().as_secs();
                 if show_in_terminal {
                     if sec_timer <= 0f32 {
@@ -377,7 +380,7 @@ fn parse_hex_color(s: &str) -> Result<Color, ()> {
     }
 }
 
-async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
+async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide> {
     let content = std::fs::read_to_string(path).expect("Failed to read file");
 
     let mut slides = Vec::new();
@@ -408,6 +411,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
                 None,
                 Some(comments),
                 virtual_screen_size,
+                font,
             ));
             slide_num += 1;
             continue;
@@ -437,6 +441,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
                     Some(comments)
                 },
                 virtual_screen_size,
+                font,
             ));
             slide_num += 1;
             continue;
@@ -450,7 +455,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
             if line.trim_start().starts_with('|') {
                 comment_lines.push(line.trim_start_matches('|').trim());
             } else {
-                text_lines.push(line.trim());
+                text_lines.push(line);
             }
         }
 
@@ -470,6 +475,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
                 Some(comment_lines.join("\n"))
             },
             virtual_screen_size,
+            font,
         ));
 
         slide_num += 1;
@@ -562,28 +568,36 @@ fn find_max_font_size(
     let target_width = screen_w * 0.96;
     let target_height = screen_h * 0.96;
 
-    let mut font_size = 32u16;
-    let step = 32u16;
+    // Determine step size based on text length
+    let text_len = text.chars().count();
+    let step: u16 = match text_len {
+        0..=3 => 72,
+        4..=7 => 64,
+        8..=15 => 16,
+        _ => 4,
+    };
 
-    println!("{}", virtual_screen_size);
+    let mut font_size: u16 = 4u16;
 
     loop {
         let dim = measure_multiline_text(text, font, font_size, font_scale, line_distance_factor);
 
         if dim.width > target_width || dim.height > target_height {
             font_size -= step;
-            println!("Minused {}", font_size);
+            debug_println!("decreased to {}", font_size);
             break;
         }
 
         font_size += step;
 
-        println!("{}", font_size);
+        debug_println!("{}", font_size);
 
         if font_size >= 1024 {
             break;
         }
     }
+
+    println!(".");
 
     font_size
 }

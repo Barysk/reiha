@@ -4,12 +4,7 @@
 |   - there can be your notes
 |   - the first comment block is omitted
 
-A lot of
-V text
-A lot of
-V text
-A lot of
-V text
+レイハ
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
@@ -23,7 +18,7 @@ depends on
 \
 | Use \ to create an empty slide
 
-present FILENAME
+    reiha <filename>
 one slide per paragraph
 
 questions?
