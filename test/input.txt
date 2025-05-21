@@ -10,16 +10,10 @@ A lot of
 V text
 A lot of
 V text
-A lot of
-V text
-A lot of
-V text
-A lot of
-V text
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@test/img.png
+@test/th.png
 | To make image slide, start the line with @
 
 depends on

@@ -28,10 +28,7 @@ async fn main() {
   }
 } */
 
-//tmp
-const TEST_FILE_PATH: &str = "test/input.txt";
-
-const VIRTUAL_SCREEN: Vec2 = vec2(1600f32, 1200f32);
+const VIRTUAL_SCREEN_SIZE: Vec2 = vec2(1600f32, 1200f32);
 
 enum SlideType {
     Empty,
@@ -39,12 +36,48 @@ enum SlideType {
     Image,
 }
 
+struct Theme {
+    background_color: Color,
+    font_color: Color,
+}
+
+const DARK_THEME: Theme = Theme {
+    background_color: Color {
+        r: 0f32,
+        g: 0f32,
+        b: 0f32,
+        a: 255f32,
+    },
+    font_color: Color {
+        r: 255f32,
+        g: 255f32,
+        b: 255f32,
+        a: 255f32,
+    },
+};
+
+const LIGHT_THEME: Theme = Theme {
+    background_color: Color {
+        r: 255f32,
+        g: 255f32,
+        b: 255f32,
+        a: 255f32,
+    },
+    font_color: Color {
+        r: 0f32,
+        g: 0f32,
+        b: 0f32,
+        a: 255f32,
+    },
+};
+
 struct Slide {
     num: u32,
     slide_type: SlideType,
     text: Option<String>,
     img: Option<Texture2D>,
     font: Option<Font>,
+    font_size: Option<u16>,
     comments: Option<String>,
 }
 
@@ -55,6 +88,7 @@ impl Slide {
         text: Option<String>,
         img: Option<Texture2D>,
         comments: Option<String>,
+        virtual_screen_size: &Vec2,
     ) -> Self {
         let mut self_values = Self {
             num,
@@ -62,6 +96,7 @@ impl Slide {
             text: None,
             img: None,
             font: None,
+            font_size: None,
             comments,
         };
 
@@ -69,7 +104,16 @@ impl Slide {
             SlideType::Empty => {}
             SlideType::Text => {
                 self_values.font = Some(load_ttf_font_from_bytes(DEFAULT_FONT).unwrap());
-                self_values.text = text
+                if let Some(ref text_val) = text {
+                    self_values.font_size = Some(find_max_font_size(
+                        text_val,
+                        self_values.font.as_ref(),
+                        1.0,
+                        Some(1.0),
+                        &virtual_screen_size,
+                    ));
+                }
+                self_values.text = text;
             }
             SlideType::Image => {
                 self_values.img = img;
@@ -79,14 +123,20 @@ impl Slide {
         self_values
     }
 
-    fn draw(&self) {
+    fn draw(&self, font_color: &Color, virtual_screen_size: &Vec2) {
         match self.slide_type {
             SlideType::Empty => {}
             SlideType::Text => {
-                draw_text_center(&self.text.clone().unwrap(), self.font.as_ref());
+                draw_text_center(
+                    &self.text.clone().unwrap(),
+                    self.font.as_ref(),
+                    font_color,
+                    virtual_screen_size,
+                    self.font_size.unwrap_or(16u16),
+                );
             }
             SlideType::Image => {
-                draw_img_scaled_and_centered(&self.img.clone().unwrap());
+                draw_img_scaled_and_centered(&self.img.clone().unwrap(), virtual_screen_size);
             }
         }
     }
@@ -133,28 +183,103 @@ fn print_time(elapsed_secs: Option<u64>) {
 
 #[macroquad::main("レイハ")]
 async fn main() {
-    // NOTE: args
-    // let args: Vec<String> = std::env::args().collect();
-    // let input_path = args.get(1).expect("Usage: reiha <input-file>");
+    let args: Vec<String> = std::env::args().collect();
+    if args.len() < 2 || args.contains(&"help".to_string()) {
+        println!(
+            "Usage: reiha <path>\n\
+            Options:\n\
+            -t dark|light|<bg_hex>x<font_hex> - Set theme\n\
+            -l set texture filtering mode to linear, default is nearest\n\
+            -f <font_path> - Use a custom font\n\
+            -r <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
+            \n\
+            bk 2025"
+        );
+        return;
+    }
 
-    // usage: reiha <path>
-    // reiha help - to show this page
-    //
-    // -t dark/light - to set premade dark or light theme
-    // -F nearest/linear - set filtering mode, default is ...
-    // -f fontname - use custom font
-    // -c #hex_background|#hex_font - set custom colors
-    // -r 1600x1200 - to set resolution, default is 1600x1200
+    let input_path = &args[1];
 
-    set_default_filter_mode(FilterMode::Nearest);
+    let mut theme = DARK_THEME;
+    let mut filtering = FilterMode::Nearest;
+    let mut font: Font = load_ttf_font_from_bytes(DEFAULT_FONT).unwrap();
+    let mut virtual_screen_size = VIRTUAL_SCREEN_SIZE;
+
+    for i in 2..args.len() {
+        match args[i].as_str() {
+            "-t" => {
+                if let Some(value) = args.get(i + 1) {
+                    if value == "dark" {
+                        theme = DARK_THEME;
+                    } else if value == "light" {
+                        theme = LIGHT_THEME;
+                    } else if value.contains('x') {
+                        let parts: Vec<&str> = value.split('x').collect();
+                        if parts.len() == 2 {
+                            if let (Ok(bg), Ok(font)) =
+                                (parse_hex_color(parts[0]), parse_hex_color(parts[1]))
+                            {
+                                theme = Theme {
+                                    background_color: bg,
+                                    font_color: font,
+                                };
+                            } else {
+                                eprintln!("Invalid hex values in -t argument, using DARK_THEME");
+                            }
+                        } else {
+                            eprintln!("Invalid format for -t argument, expected HEXxHEX");
+                        }
+                    } else {
+                        eprintln!("Unknown theme option '{}', using DARK_THEME", value);
+                    }
+                }
+            }
+            "-l" => {
+                filtering = FilterMode::Linear;
+            }
+            "-f" => {
+                if let Some(path) = args.get(i + 1) {
+                    let data = std::fs::read(path).expect("Failed to read font file");
+                    font = load_ttf_font_from_bytes(&data).expect("Failed to load font");
+                }
+            }
+            "-r" => {
+                if let Some(value) = args.get(i + 1) {
+                    if let Some((w, h)) = value.split_once('x') {
+                        if let (Ok(w), Ok(h)) = (w.parse::<f32>(), h.parse::<f32>()) {
+                            if w > 3840.0 || h > 3840.0 {
+                                eprintln!(
+                                    "Error: Resolution too large ({}x{}). Max allowed is 3840x3840.",
+                                    w, h
+                                );
+                                std::process::exit(1);
+                            }
+                            virtual_screen_size = vec2(w, h);
+                        } else {
+                            eprintln!(
+                                "Error: Invalid resolution format. Use <width>x<height> (e.g., 1600x1200)"
+                            );
+                            std::process::exit(1);
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
+    set_default_filter_mode(filtering);
     println!("Filter set");
 
-    let virtual_screen = Canvas2D::new(VIRTUAL_SCREEN.x, VIRTUAL_SCREEN.y);
-    println!("Virtual Screen created");
+    let virtual_screen = Canvas2D::new(virtual_screen_size.x, virtual_screen_size.y);
+    println!(
+        "Virtual Screen created {}x{}",
+        virtual_screen_size.x, virtual_screen_size.y
+    );
 
-    // tmp
-    let slides: Vec<Slide> = parse(TEST_FILE_PATH).await;
-    // let slides: Vec<Slide> = parse(input_path).await;
+    let mut is_fullscreen = false;
+
+    let slides: Vec<Slide> = parse(input_path, &virtual_screen_size).await;
     println!("Data parsed");
 
     let mut current_slide = 0;
@@ -164,22 +289,26 @@ async fn main() {
     let start_time = std::time::Instant::now();
     println!("Timestamp placed");
 
+    let show_in_terminal = false;
+
     println!("Main loop start");
     loop {
         sec_timer -= get_frame_time();
         clear_background(BLACK);
         {
             set_camera(&virtual_screen.camera);
-            clear_background(GRAY);
+            clear_background(theme.background_color);
 
             if let Some(slide) = slides.get(current_slide) {
-                slide.draw();
+                slide.draw(&theme.font_color, &virtual_screen_size);
                 let elapsed = start_time.elapsed().as_secs();
-                if sec_timer <= 0f32 {
-                    clearscreen::clear().expect("failed to clear screen");
-                    slide.print(slides.len());
-                    print_time(Some(elapsed));
-                    sec_timer = 1f32;
+                if show_in_terminal {
+                    if sec_timer <= 0f32 {
+                        clearscreen::clear().expect("failed to clear screen");
+                        slide.print(slides.len());
+                        print_time(Some(elapsed));
+                        sec_timer = 1f32;
+                    }
                 }
             }
 
@@ -202,6 +331,11 @@ async fn main() {
             }
         }
 
+        if is_key_pressed(KeyCode::F) || is_key_pressed(KeyCode::F11) {
+            is_fullscreen = !is_fullscreen;
+            set_fullscreen(is_fullscreen);
+        }
+
         if is_key_pressed(KeyCode::Q) || is_key_pressed(KeyCode::Escape) {
             break;
         }
@@ -211,8 +345,23 @@ async fn main() {
     }
 }
 
-// FIXME: Rveiew after getting soem sleep
-async fn parse(path: &str) -> Vec<Slide> {
+/// parses hex color to 255 format
+fn parse_hex_color(s: &str) -> Result<Color, ()> {
+    let s = s.trim_start_matches('#');
+    if s.len() != 6 {
+        return Err(());
+    }
+    if let Ok(rgb) = u32::from_str_radix(s, 16) {
+        let r = ((rgb >> 16) & 0xFF) as f32 / 255.0;
+        let g = ((rgb >> 8) & 0xFF) as f32 / 255.0;
+        let b = (rgb & 0xFF) as f32 / 255.0;
+        Ok(Color { r, g, b, a: 1.0 })
+    } else {
+        Err(())
+    }
+}
+
+async fn parse(path: &str, virtual_screen_size: &Vec2) -> Vec<Slide> {
     let content = std::fs::read_to_string(path).expect("Failed to read file");
 
     let mut slides = Vec::new();
@@ -242,6 +391,7 @@ async fn parse(path: &str) -> Vec<Slide> {
                 None,
                 None,
                 Some(comments),
+                virtual_screen_size,
             ));
             slide_num += 1;
             continue;
@@ -270,6 +420,7 @@ async fn parse(path: &str) -> Vec<Slide> {
                 } else {
                     Some(comments)
                 },
+                virtual_screen_size,
             ));
             slide_num += 1;
             continue;
@@ -302,6 +453,7 @@ async fn parse(path: &str) -> Vec<Slide> {
             } else {
                 Some(comment_lines.join("\n"))
             },
+            virtual_screen_size,
         ));
 
         slide_num += 1;
@@ -311,25 +463,24 @@ async fn parse(path: &str) -> Vec<Slide> {
 }
 
 /// draws an image using draw_texture_ex
-fn draw_img_scaled_and_centered(texture: &Texture2D) {
+fn draw_img_scaled_and_centered(texture: &Texture2D, virtual_screen_size: &Vec2) {
     let position: Vec2 = vec2(0f32, 0f32);
-
-    const SCREEN_CENTER: Vec2 = vec2(VIRTUAL_SCREEN.x / 2f32, VIRTUAL_SCREEN.y / 2f32);
-    const SCREEN_HEIGHT: f32 = VIRTUAL_SCREEN.y;
-    const SCREEN_WIDTH: f32 = VIRTUAL_SCREEN.x;
+    let screen_center: Vec2 = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
+    let screen_height: f32 = virtual_screen_size.y;
+    let screen_width: f32 = virtual_screen_size.x;
 
     let scale: f32;
 
     if texture.height() > texture.width() {
-        scale = SCREEN_HEIGHT / texture.height();
+        scale = screen_height / texture.height();
     } else {
-        scale = SCREEN_WIDTH / texture.width();
+        scale = screen_width / texture.width();
     }
 
     let scaled_texture: Vec2 = vec2(texture.width() * scale, texture.height() * scale);
     let image_center: Vec2 = scaled_texture / 2f32;
 
-    let corected_position: Vec2 = position + (SCREEN_CENTER - image_center);
+    let corected_position: Vec2 = position + (screen_center - image_center);
 
     let dest_size: Vec2 = scaled_texture;
 
@@ -345,15 +496,19 @@ fn draw_img_scaled_and_centered(texture: &Texture2D) {
     );
 }
 
-fn draw_text_center(text: &str, font: Option<&Font>) {
+fn draw_text_center(
+    text: &str,
+    font: Option<&Font>,
+    font_color: &Color,
+    virtual_screen_size: &Vec2,
+    font_size: u16,
+) {
     let font_scale = 1f32;
     let font_scale_aspect = 1f32;
     let rotation = 0f32;
     let line_distance_factor = 1f32;
 
-    let font_size = find_max_font_size(text, font, font_scale, Some(line_distance_factor));
-
-    let screen_center = vec2(VIRTUAL_SCREEN.x / 2f32, VIRTUAL_SCREEN.y / 2f32);
+    let screen_center = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
     let mut position = screen_center;
 
     // NOTE: Macroquad crate modifyed using this commit: https://github.com/not-fl3/macroquad/pull/884/files
@@ -384,37 +539,42 @@ fn draw_text_center(text: &str, font: Option<&Font>) {
             font_scale,
             font_scale_aspect,
             rotation,
-            color: WHITE,
+            color: *font_color,
         },
     );
 }
 
-// FIXME: font rendering is not a fast process
-// take monospace glyph size for the probe
 fn find_max_font_size(
     text: &str,
     font: Option<&Font>,
     font_scale: f32,
     line_distance_factor: Option<f32>,
+    virtual_screen_size: &Vec2,
 ) -> u16 {
-    let screen_w = VIRTUAL_SCREEN.y;
-    let screen_h = VIRTUAL_SCREEN.x;
-    let target_width = screen_w * 0.95;
-    let target_height = screen_h * 0.95;
+    let screen_w = virtual_screen_size.y;
+    let screen_h = virtual_screen_size.x;
+    let target_width = screen_w * 0.8;
+    let target_height = screen_h * 0.8;
 
-    let mut font_size = 4u16;
-    let step = 4u16;
+    let mut font_size = 32u16;
+    let step = 32u16;
+
+    println!("{}", virtual_screen_size);
 
     loop {
         let dim = measure_multiline_text(text, font, font_size, font_scale, line_distance_factor);
 
         if dim.width > target_width || dim.height > target_height {
+            font_size -= step;
+            println!("Minused {}", font_size);
             break;
         }
 
         font_size += step;
 
-        if font_size >= 512 {
+        println!("{}", font_size);
+
+        if font_size >= 1024 {
             break;
         }
     }
