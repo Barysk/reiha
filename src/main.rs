@@ -175,12 +175,10 @@ impl Slide {
                 let screen_width: f32 = virtual_screen_size.x;
                 self_values.img = img;
 
-                let img: Texture2D = self_values.img.clone().unwrap();
-
-                if img.height() > img.width() {
-                    self_values.img_scale = Some(screen_height / img.height());
-                } else {
-                    self_values.img_scale = Some(screen_width / img.width());
+                if let Some(ref image) = self_values.img {
+                    let scale_x = screen_width / image.width();
+                    let scale_y = screen_height / image.height();
+                    self_values.img_scale = Some(scale_x.min(scale_y));
                 }
             }
         }
@@ -273,8 +271,8 @@ async fn main() {
             -l, --linear - set texture filtering mode to linear, default is nearest\n\
             -f, --font <font_path> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
-            ________________________________________________\n\
-            レイハ | bk | 和理守 | Wednesday 21 May, 2025 CE"
+            ______________________\n\
+            レイハ | ver1.1.1 | bk"
         );
         return;
     }
@@ -638,9 +636,9 @@ fn find_max_font_size(
     // Determine step size based on text length
     let text_len = text.chars().count();
     let mut step: u16 = match text_len {
-        0..=3 => 256,
-        4..=7 => 128,
-        8..=15 => 64,
+        0..=3 => 96,
+        4..=7 => 64,
+        8..=15 => 48,
         _ => 32,
     };
 
