@@ -1,6 +1,6 @@
 [package]
 name = "reiha"
-version = "1.1.1"
+version = "1.1.2"
 authors = ["bk <boris.komarov@proton.me>"]
 edition = "2024"
 
@@ -8,7 +8,6 @@ edition = "2024"
 opt-level = 3
 
 [dependencies]
-clearscreen = "4.0.1"
 dirs = "6.0.0"
 macroquad = "0.4.14"
 macroquad-canvas = "0.4.1"

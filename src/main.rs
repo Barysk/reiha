@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 use macroquad_canvas::Canvas2D;
 use std::path::PathBuf;
+use std::process::Command;
 
 macro_rules! debug_println {
     ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
@@ -272,7 +273,7 @@ async fn main() {
             -f, --font <font_path> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             ______________________\n\
-            レイハ | ver1.1.1 | bk"
+            レイハ | ver1.1.2 | bk"
         );
         return;
     }
@@ -378,7 +379,7 @@ async fn main() {
                 let elapsed = start_time.elapsed().as_secs();
                 if show_in_terminal {
                     if sec_timer <= 0f32 {
-                        clearscreen::clear().expect("failed to clear screen");
+                        clear_screen();
                         slide.print(slides.len());
                         print_time(Some(elapsed));
                         sec_timer = 1f32;
@@ -426,6 +427,19 @@ async fn main() {
 
         //draw_fps();
         next_frame().await
+    }
+}
+
+fn clear_screen() {
+    if cfg!(target_os = "windows") {
+        Command::new("cmd")
+            .args(["/C", "cls"])
+            .status()
+            .expect("Failed to clear screen");
+    } else {
+        Command::new("clear")
+            .status()
+            .expect("Failed to clear screen");
     }
 }
 
