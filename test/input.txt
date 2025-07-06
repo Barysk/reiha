@@ -8,14 +8,11 @@
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@test/th.png
-
 @test/screen.png
 | To make image slide, start the line with @
 |   Blah
 
-| Presumably a comment that is not rendered
-
+| this is comment for you, and it is totally omitted
 
 It scales
   text that you
@@ -25,18 +22,24 @@ It scales
 | Automatically
 |  Of course
 
+
+
+| Number of spaces can be any, but there must be one at least
+
+
+
+
+this slide
+~
+with empty line
+| notice the ~ symbol on empty line
+| it is not going to be rendered 
+
+
 \
 | Use \ to create an empty slide
 
-
-
-
-
-
     reiha <filename>
 one slide per paragraph
-
-
-
 
 questions?

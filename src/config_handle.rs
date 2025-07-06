@@ -9,6 +9,8 @@ pub struct Config {
     pub filtering: Option<FilterMode>,
     pub font_path: Option<String>,
     pub virtual_resolution: Option<Vec2>,
+    pub numbering: Option<bool>,
+    pub preview: Option<bool>,
 }
 
 impl Config {
@@ -18,6 +20,8 @@ impl Config {
             filtering: None,
             font_path: None,
             virtual_resolution: None,
+            numbering: None,
+            preview: None,
         };
 
         let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
@@ -71,6 +75,12 @@ impl Config {
                                 }
                             }
                         }
+                    }
+                    "-n" | "--numbering" => {
+                        config.numbering = Some(true);
+                    }
+                    "-p" | "--preview" => {
+                        config.preview = Some(true);
                     }
                     _ => {}
                 }

@@ -86,6 +86,8 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
         for line in lines {
             if line.trim_start().starts_with('|') {
                 comment_lines.push(line);
+            } else if line.trim_start().starts_with('~') {
+                text_lines.push("");
             } else {
                 text_lines.push(line);
             }
@@ -114,82 +116,6 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
     }
 
     slides
-}
-
-/// draws an image using draw_texture_ex
-pub fn draw_img_scaled_and_centered(
-    texture: &Texture2D,
-    img_scale: &f32,
-    virtual_screen_size: &Vec2,
-) {
-    let position: Vec2 = vec2(0f32, 0f32);
-    let screen_center: Vec2 = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
-
-    let scaled_texture: Vec2 = vec2(texture.width() * img_scale, texture.height() * img_scale);
-    let image_center: Vec2 = scaled_texture / 2f32;
-
-    let corected_position: Vec2 = position + (screen_center - image_center);
-
-    let dest_size: Vec2 = scaled_texture;
-
-    draw_texture_ex(
-        &texture,
-        corected_position.x,
-        corected_position.y,
-        WHITE,
-        DrawTextureParams {
-            dest_size: Some(dest_size),
-            ..Default::default()
-        },
-    );
-}
-
-pub fn draw_text_center(
-    text: &str,
-    font: Option<&Font>,
-    font_color: &Color,
-    virtual_screen_size: &Vec2,
-    font_size: u16,
-) {
-    let font_scale = 1f32;
-    let font_scale_aspect = 1f32;
-    let rotation = 0f32;
-    let line_distance_factor = 1f32;
-
-    let screen_center = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
-    let mut position = screen_center;
-
-    // NOTE: Macroquad crate modifyed using this commit: https://github.com/not-fl3/macroquad/pull/884/files
-    let text_dimentions = measure_multiline_text(
-        text,
-        font,
-        font_size,
-        font_scale,
-        Some(line_distance_factor),
-    );
-
-    let text_center = vec2(
-        position.x + (text_dimentions.width / 2f32),
-        position.y + (text_dimentions.height / 2f32) - (font_size as f32 * 0.85), // 0.85 is a picked value that seems to be working
-    );
-
-    let difference = screen_center - text_center;
-    position += difference;
-
-    draw_multiline_text_ex(
-        text,
-        position.x,
-        position.y,
-        Some(line_distance_factor),
-        TextParams {
-            font,
-            font_size,
-            font_scale,
-            font_scale_aspect,
-            rotation,
-            color: *font_color,
-        },
-    );
 }
 
 pub fn find_max_font_size(

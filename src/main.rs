@@ -26,6 +26,8 @@ async fn main() {
         load_ttf_font_from_bytes(DEFAULT_FONT).unwrap()
     };
     let mut virtual_screen_size = config.virtual_resolution.unwrap_or(VIRTUAL_SCREEN_SIZE);
+    let mut numbering = config.numbering.unwrap_or(false);
+    let mut preview = config.preview.unwrap_or(false);
 
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 || args.contains(&"help".to_string()) {
@@ -36,8 +38,7 @@ async fn main() {
             -l, --linear - set texture filtering mode to linear, default is nearest\n\
             -f, --font <font_path> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
-            NEW\n\
-            -n, --numbering <left|right|top|bottom|center> - turn on the slide numbers, that will be shown for 3 sec\n\
+            -n, --numbering - turn on the slide numbering\n\
             -p, --preview - shows next slide in your terminal if there is such\n\
             ______________________\n\
             レイハ | ver1.2.0 | bk"
@@ -106,6 +107,12 @@ async fn main() {
                     }
                 }
             }
+            "-n" | "--numbering" => {
+                numbering = true;
+            }
+            "-p" | "--preview" => {
+                preview = true;
+            }
             _ => {}
         }
     }
@@ -133,6 +140,14 @@ async fn main() {
 
     let show_in_terminal = true;
 
+    let numbering_position: Vec2 = Vec2 {
+        x: virtual_screen_size.x / 400f32,
+        y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
+    };
+
+    let numbering_offset = numbering_position.x * 0.32;
+    let numbering_size = (virtual_screen_size.x as u16 / 8u16) as u16;
+
     println!("Main loop start");
     loop {
         sec_timer -= get_frame_time();
@@ -143,17 +158,32 @@ async fn main() {
 
             if let Some(slide) = slides.get(current_slide) {
                 slide.draw(&font, &theme.font_color, &virtual_screen_size);
+                if numbering {
+                    draw_numbering(
+                        &current_slide,
+                        &font,
+                        &numbering_position,
+                        &numbering_offset,
+                        &numbering_size,
+                        &theme,
+                    );
+                }
                 let elapsed = start_time.elapsed().as_secs();
                 if show_in_terminal {
                     if sec_timer <= 0f32 {
                         clear_screen();
-                        println!("< Current Slide >");
+                        if preview {
+                            println!("< Current Slide >");
+                        }
                         slide.print(slides.len());
                         print_time(Some(elapsed));
-                        if let Some(next_slide) = slides.get(current_slide + 1) {
-                            println!("\n\n\n< Next Slide >");
-                            next_slide.print(slides.len());
+                        if preview {
+                            if let Some(next_slide) = slides.get(current_slide + 1) {
+                                println!("\n\n\n< Next Slide >");
+                                next_slide.print(slides.len());
+                            }
                         }
+
                         sec_timer = 1f32;
                     }
                 }
@@ -191,6 +221,15 @@ async fn main() {
         if is_key_pressed(KeyCode::F) || is_key_pressed(KeyCode::F11) {
             is_fullscreen = !is_fullscreen;
             set_fullscreen(is_fullscreen);
+        }
+
+        if is_key_pressed(KeyCode::P) {
+            preview = !preview;
+            sec_timer = 0f32;
+        }
+
+        if is_key_pressed(KeyCode::N) {
+            numbering = !numbering;
         }
 
         if is_key_pressed(KeyCode::Q) || is_key_pressed(KeyCode::Escape) {

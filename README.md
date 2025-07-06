@@ -25,6 +25,8 @@ Some features borrowed from ```wend```
 ```-l, --linear``` - set texture filtering mode to linear, default is nearest
 ```-f, --font <font_path>``` - Use a custom font
 ```-r, --resolution <width>x<height>``` - Set virtual resolution (default 1600x1200) (max 3840x3840)
+```-n, --numbering``` - turn on the slide numbering
+```-p, --preview``` - shows next slide in your terminal if there is such
 
 ### Movement
 
@@ -41,18 +43,28 @@ Arrow UP || Arrow Left || K || H
 To enter fullscreen mode you can use:
 F11 || F
 
+Turn on/off slide numbering:
+N
+
+Turn on/off next slide preview:
+P
+
 *Letter case doesn't metter
 ```
 
 ### Config file
-Its location can be ```/home/user/.config/reiha/config```
+Its location can be ```/home/user/.config/reiha/config```.
 
 ```
 --theme 000011xff4444
 --resolution 400x300
 --linear
 --font /home/user/.fonts/Catholicon.otf
+--numbering
+--preview
 ```
+
+Short versions of flags can be used ex. instead ```--numbering``` you'll write ```-n```.
 
 ### Syntax:
 
@@ -71,6 +83,8 @@ Its location can be ```/home/user/.config/reiha/config```
 | To make image slide, start the line with @
 |   Blah
 
+| this is comment for you, and it is totally omitted
+
 It scales
   text that you
     write to fit the
@@ -78,6 +92,20 @@ It scales
 |
 | Automatically
 |  Of course
+
+
+
+| Number of spaces can be any, but there must be one at least
+
+
+
+
+this slide
+~
+with empty line
+| notice the ~ symbol on empty line
+| it is not going to be rendered 
+
 
 \
 | Use \ to create an empty slide
