@@ -2,6 +2,7 @@ use macroquad::prelude::*;
 use macroquad_canvas::Canvas2D;
 use std::path::PathBuf;
 use std::process::Command;
+use regex::Regex;
 
 macro_rules! debug_println {
     ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
@@ -273,7 +274,7 @@ async fn main() {
             -f, --font <font_path> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             ______________________\n\
-            レイハ | ver1.1.2 | bk"
+            レイハ | ver1.1.3 | bk"
         );
         return;
     }
@@ -463,7 +464,8 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
     let content = std::fs::read_to_string(path).expect("Failed to read file");
 
     let mut slides = Vec::new();
-    let mut paragraphs = content.split("\n\n");
+    let re = Regex::new(r"\n\s*\n+").unwrap();
+    let mut paragraphs = re.split(&content);
 
     let mut slide_num = 1;
 
@@ -539,6 +541,7 @@ async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide
             }
         }
 
+        // if no text: it's source comment that is not going to be rendered anywhere
         if text_lines.is_empty() && !comment_lines.is_empty() {
             continue;
         }

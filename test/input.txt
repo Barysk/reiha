@@ -14,6 +14,9 @@
 | To make image slide, start the line with @
 |   Blah
 
+| Presumably a comment that is not rendered
+
+
 It scales
   text that you
     write to fit the
@@ -25,7 +28,15 @@ It scales
 \
 | Use \ to create an empty slide
 
+
+
+
+
+
     reiha <filename>
 one slide per paragraph
+
+
+
 
 questions?
