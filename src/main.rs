@@ -13,7 +13,7 @@ use crate::slide::*;
 use crate::theming::*;
 use crate::utils::*;
 
-#[macroquad::main("レイハ")]
+#[macroquad::main("Reiha")]
 async fn main() {
     let config = Config::from_file();
 
@@ -41,7 +41,7 @@ async fn main() {
             -n, --numbering - turn on the slide numbering\n\
             -p, --preview - shows next slide in your terminal if there is such\n\
             ______________________\n\
-            レイハ | ver1.2.0 | bk"
+            Reiha | ver1.3.0 | bk"
         );
         return;
     }
@@ -141,12 +141,13 @@ async fn main() {
     let show_in_terminal = true;
 
     let numbering_position: Vec2 = Vec2 {
-        x: virtual_screen_size.x / 400f32,
+        // x: virtual_screen_size.x / 400f32, // left part of the screen
+        x: virtual_screen_size.x / 2f32, // center
         y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
     };
 
     let numbering_offset = numbering_position.x * 0.32;
-    let numbering_size = (virtual_screen_size.x as u16 / 8u16) as u16;
+    let numbering_size = (virtual_screen_size.x as u16 / 32u16) as u16;
 
     println!("Main loop start");
     loop {

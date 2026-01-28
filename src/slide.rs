@@ -204,6 +204,9 @@ pub fn draw_numbering(
     numbering_size: &u16,
     theme: &Theme,
 ) {
+    let number_width = (measure_text(&(current_slide + 1).to_string(), Some(&font), *numbering_size, 1f32)).width;
+    let numbering_position = vec2(numbering_position.x - number_width / 2f32, numbering_position.y);
+
     draw_text_ex(
         &(current_slide + 1).to_string(),
         numbering_position.x - numbering_offset,
