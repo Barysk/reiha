@@ -248,6 +248,7 @@ async fn main() {
             || is_key_pressed(KeyCode::J)
             || is_key_pressed(KeyCode::L)
             || is_key_pressed(KeyCode::PageDown)
+            || is_mouse_button_pressed(MouseButton::Left)
         {
             if current_slide < slides.len() - 1 {
                 current_slide += 1;
@@ -260,6 +261,7 @@ async fn main() {
             || is_key_pressed(KeyCode::K)
             || is_key_pressed(KeyCode::H)
             || is_key_pressed(KeyCode::PageUp)
+            || is_mouse_button_pressed(MouseButton::Right)
         {
             if current_slide > 0 {
                 current_slide -= 1;
