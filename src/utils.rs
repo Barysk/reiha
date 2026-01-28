@@ -54,30 +54,41 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
             let img_path = lines[0][1..].trim();
             let texture = load_texture(img_path).await.expect("Failed to load image");
 
-            let comments = lines
-                .iter()
-                .skip(1)
-                .filter(|l| l.trim_start().starts_with('|'))
-                .map(|l| *l)
-                .collect::<Vec<&str>>()
-                .join("\n");
+            let mut text_lines = Vec::new();
+            let mut comment_lines = Vec::new();
+
+            for line in lines.iter().skip(1) {
+                let l = line.trim_start();
+                if l.starts_with('|') {
+                    comment_lines.push(*line);
+                } else if l.starts_with('~') {
+                    text_lines.push("");
+                } else if !l.is_empty() {
+                    text_lines.push(*line);
+                }
+            }
+
+            let slide_type:SlideType;
+            if text_lines.is_empty() {
+                slide_type = SlideType::Image;
+            } else {
+                slide_type = SlideType::TextImage;
+            };
 
             slides.push(Slide::new(
-                slide_num,
-                SlideType::Image,
-                None,
-                Some(texture),
-                if comments.is_empty() {
-                    None
-                } else {
-                    Some(comments)
-                },
-                virtual_screen_size,
-                font,
+                    slide_num,
+                    slide_type,
+                    if text_lines.is_empty() { None } else { Some(text_lines.join("\n")) },
+                    Some(texture),
+                    if comment_lines.is_empty() { None } else { Some(comment_lines.join("\n")) },
+                    virtual_screen_size,
+                    font,
             ));
+
             slide_num += 1;
             continue;
         }
+
 
         // Text slide
         let mut text_lines = Vec::new();

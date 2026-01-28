@@ -3,28 +3,32 @@ use macroquad::prelude::*;
 use crate::theming::*;
 use crate::utils::*;
 
+const CFACT : f32 = 0.7;
+
 pub enum SlideType {
     Empty,
     Text,
     Image,
+    TextImage, // TODO, Update parsing
+    // Code, // TODO
 }
 
 pub struct Slide {
-    pub num: u32,
+    pub num:  u32,
     pub slide_type: SlideType,
     pub text: Option<String>,
-    pub img: Option<Texture2D>,
+    pub img:  Option<Texture2D>,
     pub img_scale: Option<f32>,
     pub font_size: Option<u16>,
-    pub comments: Option<String>,
+    pub comments:  Option<String>,
 }
 
 impl Slide {
     pub fn new(
-        num: u32,
+        num:  u32,
         slide_type: SlideType,
         text: Option<String>,
-        img: Option<Texture2D>,
+        img:  Option<Texture2D>,
         comments: Option<String>,
         virtual_screen_size: &Vec2,
         font: &Font,
@@ -62,6 +66,28 @@ impl Slide {
                     self_values.img_scale = Some(scale_x.min(scale_y));
                 }
             }
+            SlideType::TextImage => {
+                // Image
+                let screen_width = virtual_screen_size.x;
+                let screen_height = virtual_screen_size.y * CFACT;
+                self_values.img = img;
+
+                if let Some(ref image) = self_values.img {
+                    let scale_x = screen_width / image.width();
+                    let scale_y = screen_height / image.height();
+                    self_values.img_scale = Some(scale_x.min(scale_y));
+                }
+
+                // Text
+                self_values.font_size = Some(find_max_font_size(
+                        text.as_ref().unwrap(),
+                        Some(font),
+                        1.0,
+                        Some(1.0),
+                        &vec2(virtual_screen_size.x, virtual_screen_size.y * (1f32 - CFACT)),
+                ));
+                self_values.text = text;
+            }
         }
 
         self_values
@@ -77,6 +103,7 @@ impl Slide {
                     font_color,
                     virtual_screen_size,
                     self.font_size.unwrap_or(16u16),
+                    None,
                 );
             }
             SlideType::Image => {
@@ -84,6 +111,21 @@ impl Slide {
                     &self.img.clone().unwrap(),
                     &self.img_scale.clone().unwrap(),
                     virtual_screen_size,
+                );
+            }
+            SlideType::TextImage => {
+                draw_img_scaled_and_centered(
+                    &self.img.clone().unwrap(),
+                    &self.img_scale.clone().unwrap(),
+                    &vec2(virtual_screen_size.x, virtual_screen_size.y * CFACT),
+                );
+                draw_text_center(
+                    &self.text.clone().unwrap(),
+                    Some(font),
+                    font_color,
+                    &vec2(virtual_screen_size.x, virtual_screen_size.y),
+                    self.font_size.unwrap_or(16u16),
+                    Some(virtual_screen_size.y * CFACT),
                 );
             }
         }
@@ -105,6 +147,14 @@ impl Slide {
             }
             SlideType::Image => {
                 println!("(image)");
+            }
+            SlideType::TextImage => {
+                println!("(image)");
+                if let Some(text) = &self.text {
+                    for line in text.lines() {
+                        println!("{}", line);
+                    }
+                }
             }
         }
 
@@ -154,16 +204,22 @@ pub fn draw_text_center(
     font_color: &Color,
     virtual_screen_size: &Vec2,
     font_size: u16,
+    start_pos_y: Option<f32>,
 ) {
     let font_scale = 1f32;
     let font_scale_aspect = 1f32;
     let rotation = 0f32;
     let line_distance_factor = 1f32;
 
-    let screen_center = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
+    let mut screen_center = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
+
+    if let Some(start_y) = start_pos_y {
+        screen_center.y = virtual_screen_size.y - (virtual_screen_size.y - start_y) / 2.0;
+    }
+
     let mut position = screen_center;
 
-    // NOTE: Macroquad crate modifyed using this commit: https://github.com/not-fl3/macroquad/pull/884/files
+    // NOTE: Macroquad crate modified using this commit: https://github.com/not-fl3/macroquad/pull/884/files
     let text_dimentions = measure_multiline_text(
         text,
         font,
