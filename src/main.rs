@@ -274,6 +274,14 @@ async fn main() {
             set_fullscreen(is_fullscreen);
         }
 
+        if is_key_pressed(KeyCode::S) {
+            let new_theme = Theme{
+                background_color: theme.font_color,
+                font_color: theme.background_color
+            };
+            theme = new_theme;
+        }
+
         if is_key_pressed(KeyCode::P) {
             preview = !preview;
             sec_timer = 0f32;
