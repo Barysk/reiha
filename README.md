@@ -5,8 +5,8 @@
 A tool for creating presentations using a plain text file. Thanks to this, your
 presentation content can always be accessed from any device.
 
-It utilises the takahashi method:
-https://presentationzen.blogs.com/presentationzen/2005/09/living_large_ta.html
+It utilises the [takahashi method](https://en.wikipedia.org/wiki/Takahashi_method)
+
 
 Inspired by ```sent```
 
