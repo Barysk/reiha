@@ -43,7 +43,7 @@ async fn main() {
             -a, --numbering_anchor - bl | bc | br | tl | tc | tr, if incorrect defaults to bl (bottom left)\n\
             -p, --preview - shows next slide in your terminal if there is such\n\
             ______________________\n\
-            Reiha | ver1.X.Y | bk"
+            Reiha | ver1.2.2 | bk"
         );
         return;
     }
@@ -195,7 +195,6 @@ async fn main() {
         },
     }
 
-    let numbering_offset = numbering_position.x * 0.32;
     let numbering_size = (virtual_screen_size.x as u16 / 32u16) as u16;
 
     println!("Main loop start");
@@ -213,7 +212,6 @@ async fn main() {
                         &current_slide,
                         &font,
                         &numbering_position,
-                        &numbering_offset,
                         &numbering_size,
                         &theme,
                         &numbering_anchor,

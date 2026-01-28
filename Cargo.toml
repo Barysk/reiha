@@ -1,6 +1,6 @@
 [package]
 name = "reiha"
-version = "1.2.1"
+version = "1.2.2"
 authors = ["bk <boris.komarov@proton.me>"]
 edition = "2024"
 

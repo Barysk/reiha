@@ -209,11 +209,11 @@ pub fn draw_numbering(
     current_slide: &usize,
     font: &Font,
     numbering_position: &Vec2,
-    numbering_offset: &f32,
     numbering_size: &u16,
     theme: &Theme,
     anchor: &NumberingAnchor,
 ) {
+    const SHADOW_OFFSET: f32 = 1f32;
     let number_dim = measure_text(&(current_slide + 1).to_string(), Some(&font), *numbering_size, 1f32);
     let anchor_x: f32;
 
@@ -233,8 +233,8 @@ pub fn draw_numbering(
 
     draw_text_ex(
         &(current_slide + 1).to_string(),
-        numbering_position.x - numbering_offset,
-        numbering_position.y - numbering_offset,
+        numbering_position.x - SHADOW_OFFSET,
+        numbering_position.y - SHADOW_OFFSET,
         TextParams {
             font: Some(&font),
             font_size: *numbering_size,
@@ -246,8 +246,8 @@ pub fn draw_numbering(
     );
     draw_text_ex(
         &(current_slide + 1).to_string(),
-        numbering_position.x - numbering_offset,
-        numbering_position.y + numbering_offset,
+        numbering_position.x - SHADOW_OFFSET,
+        numbering_position.y + SHADOW_OFFSET,
         TextParams {
             font: Some(&font),
             font_size: *numbering_size,
@@ -259,8 +259,8 @@ pub fn draw_numbering(
     );
     draw_text_ex(
         &(current_slide + 1).to_string(),
-        numbering_position.x + numbering_offset,
-        numbering_position.y - numbering_offset,
+        numbering_position.x + SHADOW_OFFSET,
+        numbering_position.y - SHADOW_OFFSET,
         TextParams {
             font: Some(&font),
             font_size: *numbering_size,
@@ -272,8 +272,8 @@ pub fn draw_numbering(
     );
     draw_text_ex(
         &(current_slide + 1).to_string(),
-        numbering_position.x + numbering_offset,
-        numbering_position.y + numbering_offset,
+        numbering_position.x + SHADOW_OFFSET,
+        numbering_position.y + SHADOW_OFFSET,
         TextParams {
             font: Some(&font),
             font_size: *numbering_size,
