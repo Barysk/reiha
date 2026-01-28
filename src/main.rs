@@ -28,6 +28,7 @@ async fn main() {
     let mut virtual_screen_size = config.virtual_resolution.unwrap_or(VIRTUAL_SCREEN_SIZE);
     let mut numbering = config.numbering.unwrap_or(false);
     let mut preview = config.preview.unwrap_or(false);
+    let mut numbering_anchor = config.numbering_anchor.unwrap_or(NumberingAnchor::BottomLeft);
 
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 || args.contains(&"help".to_string()) {
@@ -39,9 +40,10 @@ async fn main() {
             -f, --font <font_path> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             -n, --numbering - turn on the slide numbering\n\
+            -a, --numbering_anchor - bl | bc | br | tl | tc | tr, if incorrect defaults to bl (bottom left)\n\
             -p, --preview - shows next slide in your terminal if there is such\n\
             ______________________\n\
-            Reiha | ver1.3.0 | bk"
+            Reiha | ver1.X.Y | bk"
         );
         return;
     }
@@ -110,6 +112,19 @@ async fn main() {
             "-n" | "--numbering" => {
                 numbering = true;
             }
+            "-a" | "--numbering_anchor" => {
+                if let Some(val) = args.get(i + 1) {
+                    match val.as_str() {
+                        "bl" => numbering_anchor = NumberingAnchor::BottomLeft,
+                        "bc" => numbering_anchor = NumberingAnchor::BottomCenter,
+                        "br" => numbering_anchor = NumberingAnchor::BottomRight,
+                        "tl" => numbering_anchor = NumberingAnchor::TopLeft,
+                        "tc" => numbering_anchor = NumberingAnchor::TopCenter,
+                        "tr" => numbering_anchor = NumberingAnchor::TopRight,
+                        _    => numbering_anchor = NumberingAnchor::BottomLeft
+                    }
+                }
+            }
             "-p" | "--preview" => {
                 preview = true;
             }
@@ -140,11 +155,45 @@ async fn main() {
 
     let show_in_terminal = true;
 
-    let numbering_position: Vec2 = Vec2 {
-        // x: virtual_screen_size.x / 400f32, // left part of the screen
-        x: virtual_screen_size.x / 2f32, // center
-        y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
-    };
+    let numbering_position: Vec2;
+    match numbering_anchor {
+        NumberingAnchor::BottomLeft => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x / 400f32,
+                y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
+            };
+        },
+        NumberingAnchor::BottomCenter => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x / 2f32,
+                y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
+            };
+        },
+        NumberingAnchor::BottomRight => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x,
+                y: virtual_screen_size.y - virtual_screen_size.y / 300f32,
+            };
+        },
+        NumberingAnchor::TopLeft => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x / 400f32,
+                y: virtual_screen_size.y - virtual_screen_size.y,
+            };
+        },
+        NumberingAnchor::TopCenter => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x / 2f32,
+                y: virtual_screen_size.y - virtual_screen_size.y,
+            };
+        },
+        NumberingAnchor::TopRight => {
+            numbering_position = Vec2 {
+                x: virtual_screen_size.x,
+                y: virtual_screen_size.y - virtual_screen_size.y,
+            };
+        },
+    }
 
     let numbering_offset = numbering_position.x * 0.32;
     let numbering_size = (virtual_screen_size.x as u16 / 32u16) as u16;
@@ -167,6 +216,7 @@ async fn main() {
                         &numbering_offset,
                         &numbering_size,
                         &theme,
+                        &numbering_anchor,
                     );
                 }
                 let elapsed = start_time.elapsed().as_secs();

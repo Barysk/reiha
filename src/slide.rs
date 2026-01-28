@@ -196,6 +196,15 @@ pub fn draw_text_center(
     );
 }
 
+pub enum NumberingAnchor{
+    BottomLeft,
+    BottomCenter,
+    BottomRight,
+    TopLeft,
+    TopCenter,
+    TopRight,
+}
+
 pub fn draw_numbering(
     current_slide: &usize,
     font: &Font,
@@ -203,9 +212,24 @@ pub fn draw_numbering(
     numbering_offset: &f32,
     numbering_size: &u16,
     theme: &Theme,
+    anchor: &NumberingAnchor,
 ) {
-    let number_width = (measure_text(&(current_slide + 1).to_string(), Some(&font), *numbering_size, 1f32)).width;
-    let numbering_position = vec2(numbering_position.x - number_width / 2f32, numbering_position.y);
+    let number_dim = measure_text(&(current_slide + 1).to_string(), Some(&font), *numbering_size, 1f32);
+    let anchor_x: f32;
+
+    match anchor {
+        NumberingAnchor::BottomLeft   | NumberingAnchor::TopLeft   => { anchor_x = 0f32 },
+        NumberingAnchor::BottomCenter | NumberingAnchor::TopCenter => { anchor_x = number_dim.width / 2f32 },
+        NumberingAnchor::BottomRight  | NumberingAnchor::TopRight  => { anchor_x = number_dim.width },
+    }
+
+    let anchor_y: f32;
+    match anchor {
+         NumberingAnchor::TopLeft | NumberingAnchor::TopCenter | NumberingAnchor::TopRight => anchor_y = number_dim.height,
+         _ => anchor_y = 0f32,
+    }
+
+    let numbering_position = vec2(numbering_position.x - anchor_x, numbering_position.y + anchor_y);
 
     draw_text_ex(
         &(current_slide + 1).to_string(),

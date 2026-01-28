@@ -1,6 +1,7 @@
 use macroquad::prelude::*;
 use std::path::PathBuf;
 
+use crate::slide::NumberingAnchor;
 use crate::theming::*;
 use crate::utils::*;
 
@@ -10,6 +11,7 @@ pub struct Config {
     pub font_path: Option<String>,
     pub virtual_resolution: Option<Vec2>,
     pub numbering: Option<bool>,
+    pub numbering_anchor: Option<NumberingAnchor>,
     pub preview: Option<bool>,
 }
 
@@ -21,6 +23,7 @@ impl Config {
             font_path: None,
             virtual_resolution: None,
             numbering: None,
+            numbering_anchor: None,
             preview: None,
         };
 
@@ -79,6 +82,19 @@ impl Config {
                     "-n" | "--numbering" => {
                         config.numbering = Some(true);
                     }
+                    "-a" | "--numbering_anchor" => {
+                        if let Some(val) = args.get(i + 1) {
+                            match val.as_str() {
+                                "bl" => config.numbering_anchor = Some(NumberingAnchor::BottomLeft),
+                                "bc" => config.numbering_anchor = Some(NumberingAnchor::BottomCenter),
+                                "br" => config.numbering_anchor = Some(NumberingAnchor::BottomRight),
+                                "tl" => config.numbering_anchor = Some(NumberingAnchor::TopLeft),
+                                "tc" => config.numbering_anchor = Some(NumberingAnchor::TopCenter),
+                                "tr" => config.numbering_anchor = Some(NumberingAnchor::TopRight),
+                                _    => config.numbering_anchor = Some(NumberingAnchor::BottomLeft),
+                            }
+                        }
+                    }
                     "-p" | "--preview" => {
                         config.preview = Some(true);
                     }
@@ -86,7 +102,6 @@ impl Config {
                 }
             }
         }
-
         config
     }
 }
