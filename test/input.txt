@@ -8,9 +8,17 @@
 | The name of the tool
 | inspired by sent, wend and takahashi method
 
-@test/screen.png
+Czy literówki polskie będą działać
+żźćšśčŭ
+
+@./test/screen.png
 | To make image slide, start the line with @
-|   Blah
+|   Blah comment
+
+@./test/screen.png
+Some text that appears in the slide
+| To make image slide, start the line with @
+|   Blah comment
 
 | this is comment for you, and it is totally omitted
 

@@ -9,7 +9,7 @@ pub enum SlideType {
     Empty,
     Text,
     Image,
-    TextImage, // TODO, Update parsing
+    TextImage,
     // Code, // TODO
 }
 
@@ -180,6 +180,33 @@ pub fn draw_img_scaled_and_centered(
     let screen_center: Vec2 = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
 
     let scaled_texture: Vec2 = vec2(texture.width() * img_scale, texture.height() * img_scale);
+    let image_center: Vec2 = scaled_texture / 2f32;
+
+    let corected_position: Vec2 = position + (screen_center - image_center);
+
+    let dest_size: Vec2 = scaled_texture;
+
+    draw_texture_ex(
+        &texture,
+        corected_position.x,
+        corected_position.y,
+        WHITE,
+        DrawTextureParams {
+            dest_size: Some(dest_size),
+            ..Default::default()
+        },
+    );
+}
+
+pub fn draw_img_background(
+    texture: &Texture2D,
+    bg_scale: &f32,
+    virtual_screen_size: &Vec2,
+) {
+    let position: Vec2 = vec2(0f32, 0f32);
+    let screen_center: Vec2 = vec2(virtual_screen_size.x / 2f32, virtual_screen_size.y / 2f32);
+
+    let scaled_texture: Vec2 = vec2(texture.width() * bg_scale, texture.height() * bg_scale);
     let image_center: Vec2 = scaled_texture / 2f32;
 
     let corected_position: Vec2 = position + (screen_center - image_center);

@@ -30,20 +30,26 @@ async fn main() {
     let mut preview = config.preview.unwrap_or(false);
     let mut numbering_anchor = config.numbering_anchor.unwrap_or(NumberingAnchor::BottomLeft);
 
+    let mut bg_image: Option<Texture2D> = None;
+    let mut bg_image_path: Option<String> = None;
+    let mut bg_scale: f32 = 1f32;
+    let mut bg_filter: bool = true;
+
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 || args.contains(&"help".to_string()) {
         println!(
-            "Usage: reiha <path>\n\
+            "Usage: reiha <path/to/presentaion> <options>\n\
             Options:\n\
             -t, --theme dark|light|<bg_hex>x<font_hex> - Set theme\n\
-            -l, --linear - set texture filtering mode to linear, default is nearest\n\
-            -f, --font <font_path> - Use a custom font\n\
+            -l, --linear - set texture filtering for images to linear, default is nearest\n\
+            -f, --font <path/to/font> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             -n, --numbering - turn on the slide numbering\n\
-            -a, --numbering_anchor - bl | bc | br | tl | tc | tr, if incorrect defaults to bl (bottom left)\n\
+            -a, --numbering_anchor <position> - position: [ bl | bc | br | tl | tc | tr ]. If incorrect defaults to bl (bottom left)\n\
+            -b, --background <path/to/image.png> <filtering> - filtering: [ linear | l | nearest | n ].\n\
             -p, --preview - shows next slide in your terminal if there is such\n\
-            ______________________\n\
-            Reiha | ver1.2.2 | bk"
+            _______________________\n\
+             Reiha | ver1.3.0 | bk "
         );
         return;
     }
@@ -125,11 +131,40 @@ async fn main() {
                     }
                 }
             }
+            "-b" | "--background" => {
+                if let Some(path) = args.get(i + 1) {
+                    bg_image_path = Some(path.clone());
+                }
+                if let Some(filter) = args.get(i + 2) {
+                    match filter.as_str() {
+                        "l" | "linear" => bg_filter = true,
+                        "n" | "nearest" => bg_filter = false,
+                        _ => panic!("Incorrect usage of background image! It takes 2 arguments. Second is filtering[nearest[n] and linear[l]]")
+                    }
+                }
+            }
             "-p" | "--preview" => {
                 preview = true;
             }
             _ => {}
         }
+    }
+
+    if !bg_image_path.is_none() {
+        bg_image = Some(load_texture(&bg_image_path.unwrap()).await.expect("Failed to load background image"));
+        if bg_filter { bg_image.as_ref().unwrap().set_filter(FilterMode::Linear) }
+        else { bg_image.as_ref().unwrap().set_filter(FilterMode::Nearest) }
+    }
+
+    if !bg_image.is_none() {
+        let screen_height: f32 = virtual_screen_size.y;
+        let screen_width: f32 = virtual_screen_size.x;
+
+        let bgi = bg_image.as_ref().unwrap();
+        let scale_x = screen_width / bgi.width();
+        let scale_y = screen_height / bgi.height();
+
+        bg_scale = scale_x.max(scale_y);
     }
 
     set_default_filter_mode(filtering);
@@ -204,6 +239,10 @@ async fn main() {
         {
             set_camera(&virtual_screen.camera);
             clear_background(theme.background_color);
+
+            if !bg_image.is_none() {
+                draw_img_background(&bg_image.as_ref().unwrap(), &bg_scale, &virtual_screen_size);
+            }
 
             if let Some(slide) = slides.get(current_slide) {
                 slide.draw(&font, &theme.font_color, &virtual_screen_size);

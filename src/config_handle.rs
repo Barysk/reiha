@@ -12,6 +12,7 @@ pub struct Config {
     pub virtual_resolution: Option<Vec2>,
     pub numbering: Option<bool>,
     pub numbering_anchor: Option<NumberingAnchor>,
+    pub bg_image_path: Option<String>,
     pub preview: Option<bool>,
 }
 
@@ -24,6 +25,7 @@ impl Config {
             virtual_resolution: None,
             numbering: None,
             numbering_anchor: None,
+            bg_image_path: None,
             preview: None,
         };
 
@@ -93,6 +95,11 @@ impl Config {
                                 "tr" => config.numbering_anchor = Some(NumberingAnchor::TopRight),
                                 _    => config.numbering_anchor = Some(NumberingAnchor::BottomLeft),
                             }
+                        }
+                    }
+                    "-b" | "--background" => {
+                        if let Some(path) = args.get(i + 1) {
+                            config.bg_image_path = Some(path.clone());
                         }
                     }
                     "-p" | "--preview" => {
