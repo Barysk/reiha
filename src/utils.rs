@@ -10,16 +10,46 @@ macro_rules! debug_println {
     ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
 }
 
-pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<Slide> {
+pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font, mono_font: &Font) -> Vec<Slide> {
     let content = std::fs::read_to_string(path).expect("Failed to read file");
+
+    let mut fixed = String::new();
+    let mut in_code = false;
+
+    for line in content.lines() {
+        let trimmed = line.trim_start();
+
+        if trimmed.starts_with("```") {
+            in_code = !in_code;
+            fixed.push_str(line);
+            fixed.push('\n');
+            continue;
+        }
+
+        if in_code {
+            // replace truly empty lines inside code blocks to avoid splitting
+            if trimmed.is_empty() {
+                fixed.push_str("<!--EMPTY-CODE-LINE-->\n");
+            } else {
+                fixed.push_str(line);
+                fixed.push('\n');
+            }
+        } else {
+            fixed.push_str(line);
+            fixed.push('\n');
+        }
+    }
+
 
     let mut slides = Vec::new();
     let re = Regex::new(r"\n\s*\n+").unwrap();
-    let mut paragraphs = re.split(&content);
+    let mut paragraphs = re.split(&fixed);
+    // let mut paragraphs = re.split(&content);
 
     let mut slide_num = 1;
 
     while let Some(paragraph) = paragraphs.next() {
+        let paragraph = paragraph.replace("<!--EMPTY-CODE-LINE-->", "");
         let lines: Vec<&str> = paragraph.lines().collect();
 
         if lines.iter().all(|line| line.trim().is_empty()) {
@@ -44,6 +74,7 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
                 Some(comments),
                 virtual_screen_size,
                 font,
+                mono_font,
             ));
             slide_num += 1;
             continue;
@@ -83,6 +114,7 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
                     if comment_lines.is_empty() { None } else { Some(comment_lines.join("\n")) },
                     virtual_screen_size,
                     font,
+                    mono_font,
             ));
 
             slide_num += 1;
@@ -90,10 +122,41 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
         }
 
 
-        // Text slide
+        // Text slides
         let mut text_lines = Vec::new();
         let mut comment_lines = Vec::new();
 
+        // Code
+        if lines[0].starts_with("```") {
+            let mut code_block_ended = false;
+            for line in lines.iter().skip(1) {
+                let line = line.trim_end();
+                if line.starts_with("```") { code_block_ended = true; }
+                if !code_block_ended { text_lines.push(line); }
+                else { if line.starts_with('|') { comment_lines.push(line); }}
+            }
+
+            slides.push(Slide::new(
+                    slide_num,
+                    SlideType::Code,
+                    Some(text_lines.join("\n")),
+                    None,
+                    if comment_lines.is_empty() {
+                        None
+                    } else {
+                        Some(comment_lines.join("\n"))
+                    },
+                    virtual_screen_size,
+                    font,
+                    mono_font,
+            ));
+
+            slide_num += 1;
+            continue;
+        }
+
+
+        // Text
         for line in lines {
             if line.trim_start().starts_with('|') {
                 comment_lines.push(line);
@@ -121,6 +184,7 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font) -> Vec<S
             },
             virtual_screen_size,
             font,
+            mono_font,
         ));
 
         slide_num += 1;

@@ -1,0 +1,70 @@
+| Example syntax that actually can be ran
+|   line that starts with '|' is considered a comment
+|   the .rh extension is totally optional, you can use .txt [ or not use any ]
+
+
+レイハ
+
+
+Default fonts are:
+  IPA Font - General
+  Ubuntu Mono - Monospace
+|  You can provide your own fonts, refer to
+|    reiha --help
+
+
+@./img/scr.png
+| this is how you make an image slide
+
+
+@./img/th.png
+Text under image
+| this is how you make an image slide with text
+| image takes TOP    70% of space
+|  text takes BOTTOM 30% of space
+
+
+| this comment is going to be fully omitted
+
+
+Text you type
+  here is going
+    to be scaled
+automatically to
+      fit the slide
+| Those spaces at the line start are preserved.
+
+
+```
+use crate::theming::*;
+use crate::utils::*;
+
+async fn main() {
+    let config = Config::from_file();
+    let mut font: Font = if let Some(path) = &config.font_path {
+        let data = std::fs::read(path).expect("Failed to read font file from config");
+        load_ttf_font_from_bytes(&data).expect("Failed to load font from config")
+    } else {
+```
+| Codeblock example
+| use ``` at the start of the block
+|         and ``` at the end of the block to create one.
+| The monospace font is going to be applied to the codeblock
+
+
+\
+| this creates an empty slide
+
+
+A slide with
+~
+an empty line
+| To create an empty line use ~ at the line that should be empty
+
+
+Comments are
+optional.
+
+
+Questions?
+

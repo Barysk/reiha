@@ -9,6 +9,7 @@ pub struct Config {
     pub theme: Option<Theme>,
     pub filtering: Option<FilterMode>,
     pub font_path: Option<String>,
+    pub mono_font_path: Option<String>,
     pub virtual_resolution: Option<Vec2>,
     pub numbering: Option<bool>,
     pub numbering_anchor: Option<NumberingAnchor>,
@@ -22,6 +23,7 @@ impl Config {
             theme: None,
             filtering: None,
             font_path: None,
+            mono_font_path: None,
             virtual_resolution: None,
             numbering: None,
             numbering_anchor: None,
@@ -70,6 +72,11 @@ impl Config {
                             config.font_path = Some(path.clone());
                         }
                     }
+                    "-m" | "--mono-font" => {
+                        if let Some(path) = args.get(i + 1) {
+                            config.mono_font_path = Some(path.clone());
+                        }
+                    }
                     "-r" | "--resolution" => {
                         if let Some(value) = args.get(i + 1) {
                             if let Some((w, h)) = value.split_once('x') {
@@ -84,7 +91,7 @@ impl Config {
                     "-n" | "--numbering" => {
                         config.numbering = Some(true);
                     }
-                    "-a" | "--numbering_anchor" => {
+                    "-a" | "--numbering-anchor" => {
                         if let Some(val) = args.get(i + 1) {
                             match val.as_str() {
                                 "bl" => config.numbering_anchor = Some(NumberingAnchor::BottomLeft),

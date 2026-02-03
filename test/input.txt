@@ -9,15 +9,16 @@
 | inspired by sent, wend and takahashi method
 
 Czy literówki polskie będą działać
-żźćšśčŭ
+żźćšśčŭфадвдар
 
 @./test/screen.png
 | To make image slide, start the line with @
 |   Blah comment
 
-@./test/screen.png
-Some text that appears in the slide
-| To make image slide, start the line with @
+@./test/th.png
+Am image and text slide
+| To make image&text slide, start the line with @ provide path to image
+| and then write your text under @
 |   Blah comment
 
 | this is comment for you, and it is totally omitted
@@ -35,13 +36,34 @@ It scales
 | Number of spaces can be any, but there must be one at least
 
 
+```
+...
+use crate::theming::*;
+use crate::utils::*;
+
+async fn main() {
+    let config = Config::from_file();
+
+    let mut theme = config.theme.unwrap_or(DARK_THEME);
+    let mut filtering = config.filtering.unwrap_or(FilterMode::Nearest);
+    let mut font: Font = if let Some(path) = &config.font_path {
+        let data = std::fs::read(path).expect("Failed to read font file from config");
+        load_ttf_font_from_bytes(&data).expect("Failed to load font from config")
+    } else {
+        load_ttf_font_from_bytes(DEFAULT_FONT).unwrap()
+    };
+...
+
+```
+this text must be lost
+|this is a code slide, starts and ends with ```
 
 
 this slide
 ~
 with empty line
 | notice the ~ symbol on empty line
-| it is not going to be rendered 
+| it is not going to be rendered
 
 
 \

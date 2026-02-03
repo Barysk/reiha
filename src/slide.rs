@@ -10,7 +10,7 @@ pub enum SlideType {
     Text,
     Image,
     TextImage,
-    // Code, // TODO
+    Code,
 }
 
 pub struct Slide {
@@ -32,6 +32,7 @@ impl Slide {
         comments: Option<String>,
         virtual_screen_size: &Vec2,
         font: &Font,
+        mono_font: &Font,
     ) -> Self {
         let mut self_values = Self {
             num,
@@ -88,12 +89,23 @@ impl Slide {
                 ));
                 self_values.text = text;
             }
+            SlideType::Code => {
+                // text
+                self_values.font_size = Some(find_max_font_size(
+                    text.as_ref().unwrap(),
+                    Some(mono_font),
+                    1.0,
+                    Some(1.0),
+                    virtual_screen_size,
+                ));
+                self_values.text = text;
+            }
         }
 
         self_values
     }
 
-    pub fn draw(&self, font: &Font, font_color: &Color, virtual_screen_size: &Vec2) {
+    pub fn draw(&self, font: &Font, mono_font: &Font, font_color: &Color, virtual_screen_size: &Vec2) {
         match self.slide_type {
             SlideType::Empty => {}
             SlideType::Text => {
@@ -128,17 +140,30 @@ impl Slide {
                     Some(virtual_screen_size.y * CFACT),
                 );
             }
+            SlideType::Code => {
+                draw_text_center(
+                    &self.text.clone().unwrap(),
+                    Some(mono_font),
+                    font_color,
+                    virtual_screen_size,
+                    self.font_size.unwrap_or(16u16),
+                    None,
+                );
+            }
         }
     }
 
     pub fn print(&self, total: usize) {
-        println!("========");
+        println!("[slide {}/{}]", self.num, total);
+        println!("===[ Content ]===============================================");
 
         match self.slide_type {
             SlideType::Empty => {
-                println!("(empty slide)");
+                println!("\n\
+                    [ Empty Slide ]\
+                    ");
             }
-            SlideType::Text => {
+            SlideType::Text | SlideType::Code => {
                 if let Some(text) = &self.text {
                     for line in text.lines() {
                         println!("{}", line);
@@ -146,10 +171,14 @@ impl Slide {
                 }
             }
             SlideType::Image => {
-                println!("(image)");
+                println!("\n\
+                    [ image ]
+                    ");
             }
             SlideType::TextImage => {
-                println!("(image)");
+                println!("\n\
+                    [ image ]
+                    ");
                 if let Some(text) = &self.text {
                     for line in text.lines() {
                         println!("{}", line);
@@ -159,14 +188,13 @@ impl Slide {
         }
 
         if let Some(comments) = &self.comments {
-            println!("--------");
+            println!("\n= =[ Notes ]= = = = = = = = = = = = = = = = = = = = = = = = =");
             for line in comments.lines() {
                 println!("{}", line);
             }
         }
 
-        println!("========");
-        println!("[slide {}/{}]", self.num, total);
+        println!("=============================================================");
     }
 }
 
@@ -296,7 +324,6 @@ pub fn draw_numbering(
     theme: &Theme,
     anchor: &NumberingAnchor,
 ) {
-    const SHADOW_OFFSET: f32 = 1f32;
     let number_dim = measure_text(&(current_slide + 1).to_string(), Some(&font), *numbering_size, 1f32);
     let anchor_x: f32;
 
@@ -314,58 +341,60 @@ pub fn draw_numbering(
 
     let numbering_position = vec2(numbering_position.x - anchor_x, numbering_position.y + anchor_y);
 
-    draw_text_ex(
-        &(current_slide + 1).to_string(),
-        numbering_position.x - SHADOW_OFFSET,
-        numbering_position.y - SHADOW_OFFSET,
-        TextParams {
-            font: Some(&font),
-            font_size: *numbering_size,
-            font_scale: 1f32,
-            font_scale_aspect: 1f32,
-            rotation: 0f32,
-            color: theme.background_color,
-        },
-    );
-    draw_text_ex(
-        &(current_slide + 1).to_string(),
-        numbering_position.x - SHADOW_OFFSET,
-        numbering_position.y + SHADOW_OFFSET,
-        TextParams {
-            font: Some(&font),
-            font_size: *numbering_size,
-            font_scale: 1f32,
-            font_scale_aspect: 1f32,
-            rotation: 0f32,
-            color: theme.background_color,
-        },
-    );
-    draw_text_ex(
-        &(current_slide + 1).to_string(),
-        numbering_position.x + SHADOW_OFFSET,
-        numbering_position.y - SHADOW_OFFSET,
-        TextParams {
-            font: Some(&font),
-            font_size: *numbering_size,
-            font_scale: 1f32,
-            font_scale_aspect: 1f32,
-            rotation: 0f32,
-            color: theme.background_color,
-        },
-    );
-    draw_text_ex(
-        &(current_slide + 1).to_string(),
-        numbering_position.x + SHADOW_OFFSET,
-        numbering_position.y + SHADOW_OFFSET,
-        TextParams {
-            font: Some(&font),
-            font_size: *numbering_size,
-            font_scale: 1f32,
-            font_scale_aspect: 1f32,
-            rotation: 0f32,
-            color: theme.background_color,
-        },
-    );
+    // // NOTE: hi-contrast feature
+    // const SHADOW_OFFSET: f32 = 1f32;
+    // draw_text_ex(
+    //     &(current_slide + 1).to_string(),
+    //     numbering_position.x - SHADOW_OFFSET,
+    //     numbering_position.y - SHADOW_OFFSET,
+    //     TextParams {
+    //         font: Some(&font),
+    //         font_size: *numbering_size,
+    //         font_scale: 1f32,
+    //         font_scale_aspect: 1f32,
+    //         rotation: 0f32,
+    //         color: theme.background_color,
+    //     },
+    // );
+    // draw_text_ex(
+    //     &(current_slide + 1).to_string(),
+    //     numbering_position.x - SHADOW_OFFSET,
+    //     numbering_position.y + SHADOW_OFFSET,
+    //     TextParams {
+    //         font: Some(&font),
+    //         font_size: *numbering_size,
+    //         font_scale: 1f32,
+    //         font_scale_aspect: 1f32,
+    //         rotation: 0f32,
+    //         color: theme.background_color,
+    //     },
+    // );
+    // draw_text_ex(
+    //     &(current_slide + 1).to_string(),
+    //     numbering_position.x + SHADOW_OFFSET,
+    //     numbering_position.y - SHADOW_OFFSET,
+    //     TextParams {
+    //         font: Some(&font),
+    //         font_size: *numbering_size,
+    //         font_scale: 1f32,
+    //         font_scale_aspect: 1f32,
+    //         rotation: 0f32,
+    //         color: theme.background_color,
+    //     },
+    // );
+    // draw_text_ex(
+    //     &(current_slide + 1).to_string(),
+    //     numbering_position.x + SHADOW_OFFSET,
+    //     numbering_position.y + SHADOW_OFFSET,
+    //     TextParams {
+    //         font: Some(&font),
+    //         font_size: *numbering_size,
+    //         font_scale: 1f32,
+    //         font_scale_aspect: 1f32,
+    //         rotation: 0f32,
+    //         color: theme.background_color,
+    //     },
+    // );
     draw_text_ex(
         &(current_slide + 1).to_string(),
         numbering_position.x,

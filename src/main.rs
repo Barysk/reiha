@@ -25,6 +25,12 @@ async fn main() {
     } else {
         load_ttf_font_from_bytes(DEFAULT_FONT).unwrap()
     };
+    let mut mono_font: Font = if let Some(path) = &config.mono_font_path {
+        let data = std::fs::read(path).expect("Failed to read font file from config");
+        load_ttf_font_from_bytes(&data).expect("Failed to load font from config")
+    } else {
+        load_ttf_font_from_bytes(MONO_FONT).unwrap()
+    };
     let mut virtual_screen_size = config.virtual_resolution.unwrap_or(VIRTUAL_SCREEN_SIZE);
     let mut numbering = config.numbering.unwrap_or(false);
     let mut preview = config.preview.unwrap_or(false);
@@ -35,21 +41,26 @@ async fn main() {
     let mut bg_scale: f32 = 1f32;
     let mut bg_filter: bool = true;
 
+    // why didn't I used a struct?
+
     let args: Vec<String> = std::env::args().collect();
-    if args.len() < 2 || args.contains(&"help".to_string()) {
+    if args.len() < 2 || args.contains(&"--help".to_string())|| args.contains(&"-h".to_string()) {
         println!(
             "Usage: reiha <path/to/presentaion> <options>\n\
             Options:\n\
             -t, --theme dark|light|<bg_hex>x<font_hex> - Set theme\n\
             -l, --linear - set texture filtering for images to linear, default is nearest\n\
             -f, --font <path/to/font> - Use a custom font\n\
+            -m, --mono-font <path/to/font> - Use a custom font\n\
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             -n, --numbering - turn on the slide numbering\n\
-            -a, --numbering_anchor <position> - position: [ bl | bc | br | tl | tc | tr ]. If incorrect defaults to bl (bottom left)\n\
+            -a, --numbering-anchor <position> - position: [ bl | bc | br | tl | tc | tr ]. If incorrect defaults to bl (bottom left)\n\
             -b, --background <path/to/image.png> <filtering> - filtering: [ linear | l | nearest | n ].\n\
-            -p, --preview - shows next slide in your terminal if there is such\n\
-            _______________________\n\
-             Reiha | ver1.3.0 | bk "
+            -p, --preview - shows next slide in your terminal if there is such\n\n\
+            Reiha optionally looks at /home/$USER/.config/reiha/config\n\
+            config syntax is options provided line by line.\n\
+            ____________________________________________________________\n\
+            Reiha | ver1.4.0 | bk "
         );
         return;
     }
@@ -94,6 +105,12 @@ async fn main() {
                     font = load_ttf_font_from_bytes(&data).expect("Failed to load font");
                 }
             }
+            "-m" | "--mono-font" => {
+                if let Some(path) = args.get(i + 1) {
+                    let data = std::fs::read(path).expect("Failed to read font file");
+                    mono_font = load_ttf_font_from_bytes(&data).expect("Failed to load font");
+                }
+            }
             "-r" | "--resolution" => {
                 if let Some(value) = args.get(i + 1) {
                     if let Some((w, h)) = value.split_once('x') {
@@ -118,7 +135,7 @@ async fn main() {
             "-n" | "--numbering" => {
                 numbering = true;
             }
-            "-a" | "--numbering_anchor" => {
+            "-a" | "--numbering-anchor" => {
                 if let Some(val) = args.get(i + 1) {
                     match val.as_str() {
                         "bl" => numbering_anchor = NumberingAnchor::BottomLeft,
@@ -178,7 +195,7 @@ async fn main() {
 
     let mut is_fullscreen = false;
 
-    let slides: Vec<Slide> = parse(input_path, &virtual_screen_size, &font).await;
+    let slides: Vec<Slide> = parse(input_path, &virtual_screen_size, &font, &mono_font).await;
     println!("Data parsed");
 
     let mut current_slide = 0;
@@ -245,7 +262,7 @@ async fn main() {
             }
 
             if let Some(slide) = slides.get(current_slide) {
-                slide.draw(&font, &theme.font_color, &virtual_screen_size);
+                slide.draw(&font, &mono_font, &theme.font_color, &virtual_screen_size);
                 if numbering {
                     draw_numbering(
                         &current_slide,
@@ -260,14 +277,13 @@ async fn main() {
                 if show_in_terminal {
                     if sec_timer <= 0f32 {
                         clear_screen();
-                        if preview {
-                            println!("< Current Slide >");
-                        }
-                        slide.print(slides.len());
                         print_time(Some(elapsed));
+                        slide.print(slides.len());
                         if preview {
                             if let Some(next_slide) = slides.get(current_slide + 1) {
-                                println!("\n\n\n< Next Slide >");
+                                println!( "\n\n\n\
+                                    ___[ Next Slide ]____________________________________________\
+                                    ");
                                 next_slide.print(slides.len());
                             }
                         }
