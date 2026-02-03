@@ -4,7 +4,7 @@
 
 ### Describtion
 
-A tool for creating simple presentations without need to fight with graphical interface.
+A tool for creating simple presentations without need in fighting with graphical interface.
 
 Initially tool was targeting _only_ [takahashi method](https://en.wikipedia.org/wiki/Takahashi_method). But I found it quite useful to have more features, such as:
 
