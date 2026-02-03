@@ -90,7 +90,7 @@ Short versions of flags can be used.
 
 ### Syntax:
 
-```
+````
 | Example syntax that actually can be ran
 |   line that starts with '|' is considered a comment
 |   the .rh extension is totally optional, you can use .txt [ or not use any ]
@@ -160,7 +160,7 @@ optional.
 
 
 Questions?
-```
+````
 
 
 
