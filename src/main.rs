@@ -36,12 +36,13 @@ async fn main() {
     let mut preview = config.preview.unwrap_or(false);
     let mut numbering_anchor = config.numbering_anchor.unwrap_or(NumberingAnchor::BottomLeft);
 
-    let mut bg_image: Option<Texture2D> = None;
-    let mut bg_image_path: Option<String> = None;
-    let mut bg_scale: f32 = 1f32;
-    let mut bg_filter: bool = true;
+    let mut bg_image: Option<Texture2D> = None; // load later
+    let mut bg_image_path: Option<String> = config.bg_image_path;
+    let mut bg_scale: f32 = 1f32; // change later
+    let mut bg_filter: bool = config.bg_filter.unwrap_or(true);
+    let mut bg_mode: BackgroundMode = config.bg_mode.unwrap_or(BackgroundMode::Fill);
 
-    // why didn't I used a struct?
+    // FIXME: why didn't I used a struct?
 
     let args: Vec<String> = std::env::args().collect();
     if args.len() < 2 || args.contains(&"--help".to_string())|| args.contains(&"-h".to_string()) {
@@ -55,12 +56,12 @@ async fn main() {
             -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)\n\
             -n, --numbering - turn on the slide numbering\n\
             -a, --numbering-anchor <position> - position: [ bl | bc | br | tl | tc | tr ]. If incorrect defaults to bl (bottom left)\n\
-            -b, --background <path/to/image.png> <filtering> - filtering: [ linear | l | nearest | n ].\n\
+            -b, --background <path/to/image.png> <filtering> <mode> - filtering: [ linear | l | nearest | n ], mode: [ fit | fill ].\n\
             -p, --preview - shows next slide in your terminal if there is such\n\n\
             Reiha optionally looks at /home/$USER/.config/reiha/config\n\
             config syntax is options provided line by line.\n\
             ____________________________________________________________\n\
-            Reiha | ver1.4.0 | bk "
+            Reiha | ver1.4.1 | bk "
         );
         return;
     }
@@ -156,7 +157,14 @@ async fn main() {
                     match filter.as_str() {
                         "l" | "linear" => bg_filter = true,
                         "n" | "nearest" => bg_filter = false,
-                        _ => panic!("Incorrect usage of background image! It takes 2 arguments. Second is filtering[nearest[n] and linear[l]]")
+                        _ => panic!("Incorrect usage of background image! It takes 3 arguments. Second is filtering[nearest[n] and linear[l]]")
+                    }
+                }
+                if let Some(mode) = args.get(i + 3) {
+                    match mode.as_str() {
+                        "fit"  => bg_mode = BackgroundMode::Fit,
+                        "fill" => bg_mode = BackgroundMode::Fill,
+                        _ => panic!("Incorrect usage of background image! It takes 3 arguments. Third is mode[fit and fill]")
                     }
                 }
             }
@@ -181,7 +189,10 @@ async fn main() {
         let scale_x = screen_width / bgi.width();
         let scale_y = screen_height / bgi.height();
 
-        bg_scale = scale_x.max(scale_y);
+        match bg_mode {
+            BackgroundMode::Fill => bg_scale = scale_x.max(scale_y),
+            BackgroundMode::Fit  => bg_scale = scale_x.min(scale_y)
+        }
     }
 
     set_default_filter_mode(filtering);

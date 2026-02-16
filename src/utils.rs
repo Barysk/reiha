@@ -10,6 +10,11 @@ macro_rules! debug_println {
     ($($arg:tt)*) => (if ::std::cfg!(debug_assertions) { ::std::println!($($arg)*); })
 }
 
+pub enum BackgroundMode {
+    Fill,
+    Fit
+}
+
 pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font, mono_font: &Font) -> Vec<Slide> {
     let content = std::fs::read_to_string(path).expect("Failed to read file");
 

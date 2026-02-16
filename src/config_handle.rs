@@ -14,6 +14,8 @@ pub struct Config {
     pub numbering: Option<bool>,
     pub numbering_anchor: Option<NumberingAnchor>,
     pub bg_image_path: Option<String>,
+    pub bg_filter: Option<bool>,
+    pub bg_mode: Option<BackgroundMode>,
     pub preview: Option<bool>,
 }
 
@@ -28,6 +30,8 @@ impl Config {
             numbering: None,
             numbering_anchor: None,
             bg_image_path: None,
+            bg_filter: None,
+            bg_mode: None,
             preview: None,
         };
 
@@ -108,7 +112,22 @@ impl Config {
                         if let Some(path) = args.get(i + 1) {
                             config.bg_image_path = Some(path.clone());
                         }
+                        if let Some(filter) = args.get(i + 2) {
+                            match filter.as_str() {
+                                "l" | "linear" =>  config.bg_filter = Some(true),
+                                "n" | "nearest" => config.bg_filter = Some(false),
+                                _ => panic!("Incorrect usage of background image! It takes 3 arguments. Second is filtering[nearest[n] and linear[l]]")
+                            }
+                        }
+                        if let Some(mode) = args.get(i + 3) {
+                            match mode.as_str() {
+                                "fit"  => config.bg_mode = Some(BackgroundMode::Fit),
+                                "fill" => config.bg_mode = Some(BackgroundMode::Fill),
+                                _ => panic!("Incorrect usage of background image! It takes 3 arguments. Third is mode[fit and fill]")
+                            }
+                        }
                     }
+
                     "-p" | "--preview" => {
                         config.preview = Some(true);
                     }
