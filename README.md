@@ -38,7 +38,7 @@ Initially tool was targeting _only_ [takahashi method](https://en.wikipedia.org/
 -r, --resolution <width>x<height> - Set virtual resolution (default 1600x1200) (max 3840x3840)
 -n, --numbering - turn on the slide numbering
 -a, --numbering-anchor <position> - position: [ bl | bc | br | tl | tc | tr ]. If incorrect defaults to bl (bottom left)
--b, --background <path/to/image.png> <filtering> - filtering: [ linear | l | nearest | n ].
+-b, --background <path/to/image.png> <filtering> <mode> - filtering: [ linear | l | nearest | n ], mode: [ fit | fill ].
 -p, --preview - shows next slide in your terminal if there is such
 ```
 
