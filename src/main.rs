@@ -42,6 +42,8 @@ async fn main() {
     let mut bg_filter: bool = config.bg_filter.unwrap_or(true);
     let mut bg_mode: BackgroundMode = config.bg_mode.unwrap_or(BackgroundMode::Fill);
 
+    // TODO: here add a var for gaps // -g --gaps <size> -- will be counted by %
+    // TODO: add logo handling // --logo <path/to/image> <position> <layer> <scale>
     // FIXME: why didn't I used a struct?
 
     let args: Vec<String> = std::env::args().collect();
@@ -262,7 +264,8 @@ async fn main() {
 
     println!("Main loop start");
     loop {
-        sec_timer -= get_frame_time();
+        sec_timer -= get_frame_time(); // FIXME: timer must be based on the timestamp, and timer
+                                       // reset must reset the timestamp
         clear_background(BLACK);
         {
             set_camera(&virtual_screen.camera);
@@ -339,6 +342,15 @@ async fn main() {
             is_fullscreen = !is_fullscreen;
             set_fullscreen(is_fullscreen);
         }
+
+        // if is_key_pressed(KeyCode::PrintScreen) {
+        //     let screenshot = get_screen_data();
+        //     // TODO add saving
+        // }
+        
+        // if is_key_pressed(KeyCode::R) {
+        //     timer // TODO
+        // }
 
         if is_key_pressed(KeyCode::S) {
             let new_theme = Theme{

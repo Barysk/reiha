@@ -98,7 +98,7 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font, mono_fon
                 if l.starts_with('|') {
                     comment_lines.push(*line);
                 } else if l.starts_with('~') {
-                    text_lines.push("");
+                    text_lines.push("\n");
                 } else if !l.is_empty() {
                     text_lines.push(*line);
                 }
@@ -166,7 +166,7 @@ pub async fn parse(path: &str, virtual_screen_size: &Vec2, font: &Font, mono_fon
             if line.trim_start().starts_with('|') {
                 comment_lines.push(line);
             } else if line.trim_start().starts_with('~') {
-                text_lines.push("");
+                text_lines.push("\n");
             } else {
                 text_lines.push(line);
             }

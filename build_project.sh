@@ -14,10 +14,10 @@ else
     exit 1
 fi
 
-echo -e "${GREEN}Building x86_64-pc-windows-gnu release...${NC}"
-if cargo build --target x86_64-pc-windows-gnu --release; then
-    echo -e "${GREEN}Windows build done.${NC}"
-else
-    echo -e "${RED}Windows build failed.${NC}"
-    exit 1
-fi
+# echo -e "${GREEN}Building x86_64-pc-windows-gnu release...${NC}"
+# if cargo build --target x86_64-pc-windows-gnu --release; then
+#     echo -e "${GREEN}Windows build done.${NC}"
+# else
+#     echo -e "${RED}Windows build failed.${NC}"
+#     exit 1
+# fi
